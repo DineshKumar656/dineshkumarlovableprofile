@@ -1,8 +1,7 @@
-
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BarChart3, Cpu, Brain, Settings, PresentationChart, Database } from "lucide-react";
+import { BarChart3, Cpu, Brain, Settings, Presentation, Database } from "lucide-react";
 
 const Services = () => {
   const services = [
@@ -55,7 +54,7 @@ const Services = () => {
       color: "orange"
     },
     {
-      icon: PresentationChart,
+      icon: Presentation,
       title: "AI-Enhanced Presentations",
       description: "Create impactful presentations and reports enhanced with AI-generated insights and visuals.",
       features: [
@@ -80,8 +79,8 @@ const Services = () => {
     }
   ];
 
-  const getColorClasses = (color) => {
-    const colorMap = {
+  const getColorClasses = (color: string) => {
+    const colorMap: Record<string, string> = {
       blue: "from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700",
       green: "from-green-500 to-green-600 hover:from-green-600 hover:to-green-700",
       purple: "from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700",
