@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Download, ArrowRight, Github, Linkedin, Mail, Sparkles, Code, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Navigation from "@/components/Navigation";
 
 const Index = () => {
@@ -164,9 +165,16 @@ const Index = () => {
                 {/* Enhanced Profile Image with glow effect */}
                 <div className="w-80 h-80 mx-auto bg-gradient-to-br from-white/30 to-white/10 rounded-full border-2 border-white/40 backdrop-blur-sm flex items-center justify-center relative overflow-hidden group">
                   <div className="absolute inset-0 bg-gradient-to-br from-orange-400/20 to-red-400/20 rounded-full animate-pulse"></div>
-                  <div className="w-72 h-72 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center text-gray-600 text-lg font-medium relative z-10 transition-all duration-300 group-hover:scale-105">
-                    Profile Photo
-                  </div>
+                  <Avatar className="w-72 h-72 relative z-10 transition-all duration-300 group-hover:scale-105">
+                    <AvatarImage 
+                      src="https://i.postimg.cc/xdjSLxvZ/IMG-20240924-WA0068.jpg" 
+                      alt="Dinesh Kumar S" 
+                      className="object-cover rounded-full"
+                    />
+                    <AvatarFallback className="bg-gradient-to-br from-gray-200 to-gray-300 text-gray-600 text-lg font-medium">
+                      DK
+                    </AvatarFallback>
+                  </Avatar>
                   
                   {/* Rotating border effect */}
                   <div className="absolute inset-0 rounded-full border-4 border-transparent bg-gradient-to-r from-orange-400 via-red-400 to-pink-400 animate-spin" style={{animationDuration: '8s'}}></div>
