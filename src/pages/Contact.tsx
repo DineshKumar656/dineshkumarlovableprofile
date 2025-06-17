@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, Linkedin, Github, MapPin, Phone, Send } from "lucide-react";
+import { Mail, Linkedin, Github, MapPin, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Contact = () => {
@@ -17,9 +17,8 @@ const Contact = () => {
   });
   const { toast } = useToast();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Handle form submission here
     toast({
       title: "Message sent!",
       description: "Thank you for your message. I'll get back to you soon!",
@@ -27,7 +26,7 @@ const Contact = () => {
     setFormData({ name: "", email: "", subject: "", message: "" });
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -221,7 +220,7 @@ const Contact = () => {
                 <CardContent>
                   <div className="grid grid-cols-2 gap-4 text-center">
                     <div>
-                      <div className="text-2xl font-bold text-blue-600">< 24h</div>
+                      <div className="text-2xl font-bold text-blue-600">&lt; 24h</div>
                       <div className="text-sm text-gray-600">Email Response</div>
                     </div>
                     <div>
