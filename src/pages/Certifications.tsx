@@ -1,10 +1,28 @@
 
+import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Award, ExternalLink } from "lucide-react";
+import { Calendar, Award, ExternalLink, Sparkles, Trophy, Star, Target } from "lucide-react";
 
 const Certifications = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    setIsVisible(true);
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth) * 100,
+        y: (e.clientY / window.innerHeight) * 100,
+      });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
   const certifications = [
     {
       title: "Machine Learning Internship",
@@ -71,8 +89,8 @@ const Certifications = () => {
     }
   ];
 
-  const getTypeColor = (type) => {
-    const colorMap = {
+  const getTypeColor = (type: string) => {
+    const colorMap: Record<string, string> = {
       "Internship": "bg-blue-100 text-blue-800",
       "Professional": "bg-green-100 text-green-800",
       "Specialized": "bg-purple-100 text-purple-800",
@@ -83,41 +101,123 @@ const Certifications = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-400 via-purple-500 to-pink-600 relative overflow-hidden">
       <Navigation />
       
-      <div className="pt-24 pb-12">
+      {/* Enhanced animated background */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Floating particles */}
+        <div className="absolute inset-0">
+          {[...Array(22)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-2 h-2 bg-white/25 rounded-full animate-pulse"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 3}s`,
+                animationDuration: `${2 + Math.random() * 2}s`
+              }}
+            />
+          ))}
+        </div>
+        
+        {/* Interactive gradient orbs */}
+        <div 
+          className="absolute w-96 h-96 bg-gradient-to-r from-white/20 to-purple-200/20 rounded-full blur-3xl animate-pulse transition-transform duration-1000 ease-out"
+          style={{
+            transform: `translate(${mousePosition.x * 0.3}px, ${mousePosition.y * 0.4}px)`,
+            top: '-10%',
+            right: '-10%'
+          }}
+        />
+        <div 
+          className="absolute w-80 h-80 bg-gradient-to-l from-white/15 to-indigo-200/15 rounded-full blur-3xl animate-pulse delay-1000 transition-transform duration-1000 ease-out"
+          style={{
+            transform: `translate(${mousePosition.x * -0.4}px, ${mousePosition.y * 0.3}px)`,
+            top: '40%',
+            left: '-15%'
+          }}
+        />
+        <div 
+          className="absolute w-72 h-72 bg-gradient-to-br from-pink-200/20 to-white/10 rounded-full blur-3xl animate-pulse delay-2000 transition-transform duration-1000 ease-out"
+          style={{
+            transform: `translate(${mousePosition.x * 0.2}px, ${mousePosition.y * -0.3}px)`,
+            bottom: '10%',
+            right: '20%'
+          }}
+        />
+      </div>
+      
+      <div className="pt-24 pb-12 relative z-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Certifications & Training
+          {/* Enhanced hero section */}
+          <div className={`text-center mb-16 transform transition-all duration-1000 ${
+            isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
+          }`}>
+            <div className="flex justify-center items-center space-x-3 mb-6">
+              <Trophy className="h-8 w-8 text-white animate-pulse" />
+              <span className="text-white/90 font-semibold text-lg tracking-wide uppercase">Achievements</span>
+              <Trophy className="h-8 w-8 text-white animate-pulse" />
+            </div>
+            
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 relative">
+              <span className="bg-gradient-to-r from-white via-purple-100 to-pink-100 bg-clip-text text-transparent">
+                Certifications
+              </span>
+              <br />
+              <span className="text-white">& Training</span>
+              
+              {/* Decorative underline */}
+              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-44 h-1 bg-gradient-to-r from-purple-300 to-pink-300 rounded-full"></div>
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Continuous learning and professional development across emerging technologies
-            </p>
+            
+            <div className="max-w-4xl mx-auto">
+              <p className="text-xl md:text-2xl text-white/90 mb-6 leading-relaxed">
+                Continuous learning and professional development across emerging technologies
+              </p>
+              
+              {/* Feature highlights */}
+              <div className="flex flex-wrap justify-center gap-6 mb-8">
+                <div className="flex items-center space-x-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg">
+                  <Star className="h-5 w-5 text-white" />
+                  <span className="text-white font-medium">Verified Skills</span>
+                </div>
+                <div className="flex items-center space-x-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg">
+                  <Target className="h-5 w-5 text-white" />
+                  <span className="text-white font-medium">Industry-Ready</span>
+                </div>
+                <div className="flex items-center space-x-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg">
+                  <Sparkles className="h-5 w-5 text-white" />
+                  <span className="text-white font-medium">Continuous Growth</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Stats Overview */}
-          <div className="grid md:grid-cols-4 gap-6 mb-12">
-            <Card className="text-center shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+          <div className={`grid md:grid-cols-4 gap-6 mb-12 transform transition-all duration-1000 delay-300 ${
+            isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+          }`}>
+            <Card className="text-center shadow-lg border-0 bg-white/90 backdrop-blur-sm hover:scale-105 transition-all duration-300">
               <CardContent className="p-6">
                 <div className="text-3xl font-bold text-indigo-600 mb-2">{certifications.length}</div>
                 <div className="text-gray-700">Total Certifications</div>
               </CardContent>
             </Card>
-            <Card className="text-center shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <Card className="text-center shadow-lg border-0 bg-white/90 backdrop-blur-sm hover:scale-105 transition-all duration-300">
               <CardContent className="p-6">
                 <div className="text-3xl font-bold text-indigo-600 mb-2">5</div>
                 <div className="text-gray-700">Organizations</div>
               </CardContent>
             </Card>
-            <Card className="text-center shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <Card className="text-center shadow-lg border-0 bg-white/90 backdrop-blur-sm hover:scale-105 transition-all duration-300">
               <CardContent className="p-6">
                 <div className="text-3xl font-bold text-indigo-600 mb-2">2024</div>
                 <div className="text-gray-700">Latest Completion</div>
               </CardContent>
             </Card>
-            <Card className="text-center shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <Card className="text-center shadow-lg border-0 bg-white/90 backdrop-blur-sm hover:scale-105 transition-all duration-300">
               <CardContent className="p-6">
                 <div className="text-3xl font-bold text-indigo-600 mb-2">15+</div>
                 <div className="text-gray-700">Skills Acquired</div>
@@ -130,12 +230,15 @@ const Certifications = () => {
             {certifications.map((cert, index) => (
               <Card 
                 key={index}
-                className="group hover:scale-102 transition-all duration-300 shadow-lg hover:shadow-xl border-0 bg-white/80 backdrop-blur-sm"
+                className={`group hover:scale-102 transition-all duration-300 shadow-lg hover:shadow-xl border-0 bg-white/90 backdrop-blur-sm transform ${
+                  isVisible ? 'translate-x-0 opacity-100' : `${index % 2 === 0 ? '-translate-x-12' : 'translate-x-12'} opacity-0`
+                }`}
+                style={{ transitionDelay: `${500 + index * 100}ms` }}
               >
                 <CardHeader>
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div className="flex items-start gap-4">
-                      <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full">
+                      <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full group-hover:scale-110 transition-transform duration-300">
                         <Award className="h-6 w-6 text-white" />
                       </div>
                       <div>
@@ -162,7 +265,7 @@ const Certifications = () => {
                   </p>
                   <div className="flex flex-wrap gap-2 mb-4">
                     {cert.skills.map((skill, skillIndex) => (
-                      <Badge key={skillIndex} variant="secondary" className="text-xs">
+                      <Badge key={skillIndex} variant="secondary" className="text-xs bg-indigo-50 text-indigo-700">
                         {skill}
                       </Badge>
                     ))}
@@ -176,7 +279,7 @@ const Certifications = () => {
                     >
                       {cert.status}
                     </Badge>
-                    <button className="flex items-center text-indigo-600 hover:text-indigo-800 transition-colors text-sm">
+                    <button className="flex items-center text-indigo-600 hover:text-indigo-800 transition-colors text-sm hover:scale-105 transform duration-200">
                       <ExternalLink className="mr-1 h-4 w-4" />
                       View Certificate
                     </button>
@@ -187,30 +290,33 @@ const Certifications = () => {
           </div>
 
           {/* Learning Goals */}
-          <Card className="mt-16 shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-2xl text-gray-900 text-center">
+          <Card className={`mt-16 shadow-2xl border-0 bg-white/90 backdrop-blur-sm transform transition-all duration-1000 delay-1000 hover:scale-105 ${
+            isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
+          }`}>
+            <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-t-lg">
+              <CardTitle className="text-2xl text-center flex items-center justify-center">
+                <Target className="h-8 w-8 mr-3" />
                 Upcoming Learning Goals
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-8">
               <div className="grid md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="p-4 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                <div className="text-center group hover:scale-105 transition-all duration-300">
+                  <div className="p-4 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center group-hover:from-blue-200 group-hover:to-blue-300">
                     <Award className="h-8 w-8 text-blue-600" />
                   </div>
                   <h3 className="font-semibold text-gray-900 mb-2">Advanced AI/ML</h3>
                   <p className="text-gray-600 text-sm">Deep learning frameworks and neural networks</p>
                 </div>
-                <div className="text-center">
-                  <div className="p-4 bg-gradient-to-br from-green-100 to-green-200 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                <div className="text-center group hover:scale-105 transition-all duration-300">
+                  <div className="p-4 bg-gradient-to-br from-green-100 to-green-200 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center group-hover:from-green-200 group-hover:to-green-300">
                     <Award className="h-8 w-8 text-green-600" />
                   </div>
                   <h3 className="font-semibold text-gray-900 mb-2">Cloud Computing</h3>
                   <p className="text-gray-600 text-sm">AWS, Azure, and cloud architecture</p>
                 </div>
-                <div className="text-center">
-                  <div className="p-4 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                <div className="text-center group hover:scale-105 transition-all duration-300">
+                  <div className="p-4 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center group-hover:from-purple-200 group-hover:to-purple-300">
                     <Award className="h-8 w-8 text-purple-600" />
                   </div>
                   <h3 className="font-semibold text-gray-900 mb-2">DevOps</h3>
