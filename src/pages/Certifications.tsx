@@ -3,9 +3,11 @@ import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Award, ExternalLink, Sparkles, Trophy, Star, Target, Eye, Upload, Plus } from "lucide-react";
+import { Calendar, Award, ExternalLink, Sparkles, Trophy, Star, Target, Eye, Upload, Plus, Edit, Trash2 } from "lucide-react";
 import CertificateViewer from "@/components/CertificateViewer";
 import CertificateUpload from "@/components/CertificateUpload";
+import CertificateEdit from "@/components/CertificateEdit";
+import { useToast } from "@/hooks/use-toast";
 
 const Certifications = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -13,6 +15,10 @@ const Certifications = () => {
   const [selectedCertificate, setSelectedCertificate] = useState(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingCertificate, setEditingCertificate] = useState(null);
+  const { toast } = useToast();
+  
   const [certifications, setCertifications] = useState([
     {
       title: "Full Stack Development Certification",
@@ -107,6 +113,30 @@ const Certifications = () => {
   const handleViewCertificate = (cert: any) => {
     setSelectedCertificate(cert);
     setIsViewerOpen(true);
+  };
+
+  const handleEditCertificate = (cert: any, index: number) => {
+    setEditingCertificate({ ...cert, index });
+    setIsEditOpen(true);
+  };
+
+  const handleUpdateCertificate = (updatedCertificate: any) => {
+    const index = editingCertificate?.index;
+    if (index !== undefined) {
+      setCertifications(prev => {
+        const newCerts = [...prev];
+        newCerts[index] = updatedCertificate;
+        return newCerts;
+      });
+    }
+  };
+
+  const handleDeleteCertificate = (index: number) => {
+    setCertifications(prev => prev.filter((_, i) => i !== index));
+    toast({
+      title: "Certificate deleted",
+      description: "The certificate has been removed successfully"
+    });
   };
 
   const handleUploadCertificate = (newCertificate: any) => {
@@ -312,6 +342,24 @@ const Certifications = () => {
                         <Eye className="mr-1 h-4 w-4" />
                         View
                       </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditCertificate(cert, index)}
+                        className="flex items-center hover:scale-105 transform duration-200"
+                      >
+                        <Edit className="mr-1 h-4 w-4" />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteCertificate(index)}
+                        className="flex items-center hover:scale-105 transform duration-200 text-red-600 hover:text-red-800 border-red-300 hover:border-red-500"
+                      >
+                        <Trash2 className="mr-1 h-4 w-4" />
+                        Delete
+                      </Button>
                       <button className="flex items-center text-indigo-600 hover:text-indigo-800 transition-colors text-sm hover:scale-105 transform duration-200">
                         <ExternalLink className="mr-1 h-4 w-4" />
                         Verify
@@ -377,6 +425,17 @@ const Certifications = () => {
         isOpen={isUploadOpen}
         onClose={() => setIsUploadOpen(false)}
         onUpload={handleUploadCertificate}
+      />
+
+      {/* Certificate Edit Modal */}
+      <CertificateEdit
+        certificate={editingCertificate}
+        isOpen={isEditOpen}
+        onClose={() => {
+          setIsEditOpen(false);
+          setEditingCertificate(null);
+        }}
+        onUpdate={handleUpdateCertificate}
       />
     </div>
   );
