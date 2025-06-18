@@ -1,14 +1,40 @@
-
 import React, { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Code, Database, Cpu, Users, Sparkles, Brain, Layers, Rocket } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Code, Database, Cpu, Users, Sparkles, Brain, Layers, Rocket, Edit, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+interface Skill {
+  name: string;
+  level: number;
+}
+
+interface SkillCategory {
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  skills: Skill[];
+}
 
 const Skills = () => {
   const [activeCategory, setActiveCategory] = useState("programming");
   const [isVisible, setIsVisible] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [editingSkill, setEditingSkill] = useState<{ categoryKey: string; skillIndex: number; skill: Skill } | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({ name: "", level: 0 });
+  const { toast } = useToast();
 
   useEffect(() => {
     setIsVisible(true);
@@ -24,7 +50,7 @@ const Skills = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  const skillCategories = {
+  const [skillCategories, setSkillCategories] = useState<Record<string, SkillCategory>>({
     programming: {
       title: "Programming Languages",
       icon: Code,
@@ -68,6 +94,72 @@ const Skills = () => {
         { name: "Problem Solving", level: 92 },
       ]
     }
+  });
+
+  const handleEditSkill = (categoryKey: string, skillIndex: number) => {
+    const skill = skillCategories[categoryKey].skills[skillIndex];
+    setEditingSkill({ categoryKey, skillIndex, skill });
+    setEditForm({ name: skill.name, level: skill.level });
+    setIsEditModalOpen(true);
+  };
+
+  const handleDeleteSkill = (categoryKey: string, skillIndex: number) => {
+    const skill = skillCategories[categoryKey].skills[skillIndex];
+    setSkillCategories(prev => ({
+      ...prev,
+      [categoryKey]: {
+        ...prev[categoryKey],
+        skills: prev[categoryKey].skills.filter((_, index) => index !== skillIndex)
+      }
+    }));
+    
+    toast({
+      title: "Skill Deleted",
+      description: `${skill.name} has been removed from ${skillCategories[categoryKey].title}.`,
+    });
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingSkill) return;
+
+    if (!editForm.name.trim()) {
+      toast({
+        title: "Error",
+        description: "Skill name cannot be empty.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (editForm.level < 0 || editForm.level > 100) {
+      toast({
+        title: "Error",
+        description: "Skill level must be between 0 and 100.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSkillCategories(prev => ({
+      ...prev,
+      [editingSkill.categoryKey]: {
+        ...prev[editingSkill.categoryKey],
+        skills: prev[editingSkill.categoryKey].skills.map((skill, index) =>
+          index === editingSkill.skillIndex
+            ? { name: editForm.name.trim(), level: editForm.level }
+            : skill
+        )
+      }
+    }));
+
+    toast({
+      title: "Skill Updated",
+      description: `${editForm.name} has been updated successfully.`,
+    });
+
+    setIsEditModalOpen(false);
+    setEditingSkill(null);
+    setEditForm({ name: "", level: 0 });
   };
 
   return (
@@ -202,10 +294,30 @@ const Skills = () => {
             <CardContent className="p-8">
               <div className="grid md:grid-cols-2 gap-6">
                 {skillCategories[activeCategory].skills.map((skill, index) => (
-                  <div key={skill.name} className="space-y-2">
+                  <div key={`${skill.name}-${index}`} className="space-y-2 group">
                     <div className="flex justify-between items-center">
                       <span className="font-medium text-gray-900">{skill.name}</span>
-                      <Badge variant="secondary" className="bg-purple-100 text-purple-700">{skill.level}%</Badge>
+                      <div className="flex items-center space-x-2">
+                        <Badge variant="secondary" className="bg-purple-100 text-purple-700">{skill.level}%</Badge>
+                        <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditSkill(activeCategory, index)}
+                            className="h-7 w-7 p-0"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteSkill(activeCategory, index)}
+                            className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                       <div
@@ -247,6 +359,55 @@ const Skills = () => {
           </div>
         </div>
       </div>
+
+      {/* Edit Skill Modal */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Skill</DialogTitle>
+            <DialogDescription>
+              Update the skill name and proficiency level.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="skill-name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="skill-name"
+                value={editForm.name}
+                onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                className="col-span-3"
+                placeholder="Enter skill name"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="skill-level" className="text-right">
+                Level (%)
+              </Label>
+              <Input
+                id="skill-level"
+                type="number"
+                min="0"
+                max="100"
+                value={editForm.level}
+                onChange={(e) => setEditForm(prev => ({ ...prev, level: parseInt(e.target.value) || 0 }))}
+                className="col-span-3"
+                placeholder="0-100"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveEdit}>
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
