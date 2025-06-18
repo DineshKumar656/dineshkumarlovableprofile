@@ -25,12 +25,12 @@ const Certifications = () => {
 
   const certifications = [
     {
-      title: "Machine Learning Internship",
-      organization: "NoviTech",
+      title: "Full Stack Development Certification",
+      organization: "TechAcademy Pro",
       date: "2024",
-      type: "Internship",
-      description: "Hands-on experience in ML algorithms, data preprocessing, and model deployment",
-      skills: ["Python", "Scikit-learn", "TensorFlow", "Data Analysis"],
+      type: "Professional",
+      description: "Comprehensive full-stack development training covering modern web technologies",
+      skills: ["React", "Node.js", "TypeScript", "Database Design"],
       status: "Completed"
     },
     {
