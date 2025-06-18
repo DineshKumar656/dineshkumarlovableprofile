@@ -1,29 +1,19 @@
-
 import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Award, ExternalLink, Sparkles, Trophy, Star, Target } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar, Award, ExternalLink, Sparkles, Trophy, Star, Target, Eye, Upload, Plus } from "lucide-react";
+import CertificateViewer from "@/components/CertificateViewer";
+import CertificateUpload from "@/components/CertificateUpload";
 
 const Certifications = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    setIsVisible(true);
-    
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100,
-      });
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  const certifications = [
+  const [selectedCertificate, setSelectedCertificate] = useState(null);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [certifications, setCertifications] = useState([
     {
       title: "Full Stack Development Certification",
       organization: "TechAcademy Pro",
@@ -87,7 +77,21 @@ const Certifications = () => {
       skills: ["Data Visualization", "Business Analytics", "Reporting"],
       status: "Completed"
     }
-  ];
+  ]);
+
+  useEffect(() => {
+    setIsVisible(true);
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth) * 100,
+        y: (e.clientY / window.innerHeight) * 100,
+      });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   const getTypeColor = (type: string) => {
     const colorMap: Record<string, string> = {
@@ -98,6 +102,15 @@ const Certifications = () => {
       "Virtual": "bg-pink-100 text-pink-800"
     };
     return colorMap[type] || "bg-gray-100 text-gray-800";
+  };
+
+  const handleViewCertificate = (cert: any) => {
+    setSelectedCertificate(cert);
+    setIsViewerOpen(true);
+  };
+
+  const handleUploadCertificate = (newCertificate: any) => {
+    setCertifications(prev => [newCertificate, ...prev]);
   };
 
   return (
@@ -192,6 +205,16 @@ const Certifications = () => {
                   <span className="text-white font-medium">Continuous Growth</span>
                 </div>
               </div>
+
+              {/* Upload Certificate Button */}
+              <Button 
+                onClick={() => setIsUploadOpen(true)}
+                size="lg"
+                className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border border-white/30 shadow-lg hover:scale-105 transition-all duration-300"
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                Add New Certificate
+              </Button>
             </div>
           </div>
 
@@ -279,10 +302,21 @@ const Certifications = () => {
                     >
                       {cert.status}
                     </Badge>
-                    <button className="flex items-center text-indigo-600 hover:text-indigo-800 transition-colors text-sm hover:scale-105 transform duration-200">
-                      <ExternalLink className="mr-1 h-4 w-4" />
-                      View Certificate
-                    </button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewCertificate(cert)}
+                        className="flex items-center hover:scale-105 transform duration-200"
+                      >
+                        <Eye className="mr-1 h-4 w-4" />
+                        View
+                      </Button>
+                      <button className="flex items-center text-indigo-600 hover:text-indigo-800 transition-colors text-sm hover:scale-105 transform duration-200">
+                        <ExternalLink className="mr-1 h-4 w-4" />
+                        Verify
+                      </button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -327,6 +361,23 @@ const Certifications = () => {
           </Card>
         </div>
       </div>
+
+      {/* Certificate Viewer Modal */}
+      <CertificateViewer
+        certificate={selectedCertificate}
+        isOpen={isViewerOpen}
+        onClose={() => {
+          setIsViewerOpen(false);
+          setSelectedCertificate(null);
+        }}
+      />
+
+      {/* Certificate Upload Modal */}
+      <CertificateUpload
+        isOpen={isUploadOpen}
+        onClose={() => setIsUploadOpen(false)}
+        onUpload={handleUploadCertificate}
+      />
     </div>
   );
 };
