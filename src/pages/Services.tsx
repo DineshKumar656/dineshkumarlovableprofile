@@ -74,6 +74,7 @@ const Services = () => {
       color: "blue"
     },
     {
+      id: 2,
       icon: Cpu,
       title: "IoT & Sensor-Based Development",
       description: "Design and develop intelligent IoT solutions with real-time monitoring and cloud integration.",
@@ -86,6 +87,7 @@ const Services = () => {
       color: "green"
     },
     {
+      id: 3,
       icon: Brain,
       title: "AI Integration for Smart Systems",
       description: "Implement AI and machine learning algorithms to create intelligent decision-making systems.",
@@ -98,6 +100,7 @@ const Services = () => {
       color: "purple"
     },
     {
+      id: 4,
       icon: Settings,
       title: "Tech-Enabled Automation",
       description: "Build automated systems that streamline processes and improve operational efficiency.",
@@ -110,6 +113,7 @@ const Services = () => {
       color: "orange"
     },
     {
+      id: 5,
       icon: Presentation,
       title: "AI-Enhanced Presentations",
       description: "Create impactful presentations and reports enhanced with AI-generated insights and visuals.",
@@ -122,6 +126,7 @@ const Services = () => {
       color: "pink"
     },
     {
+      id: 6,
       icon: Database,
       title: "Database Design & Analytics",
       description: "Design efficient databases and implement analytics solutions for data-driven decision making.",
