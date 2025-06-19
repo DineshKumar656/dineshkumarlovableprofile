@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Download, ArrowRight, Github, Linkedin, Mail, Sparkles, Code, Zap, Upload, Edit } from "lucide-react";
@@ -86,14 +87,14 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-400 via-red-400 to-pink-400 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
       <Navigation />
       
       {/* Enhanced animated background with mouse parallax */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Floating particles */}
         <div className="absolute inset-0">
-          {[...Array(20)].map((_, i) => <div key={i} className="absolute w-2 h-2 bg-white/20 rounded-full animate-pulse" style={{
+          {[...Array(20)].map((_, i) => <div key={i} className="absolute w-2 h-2 bg-white/30 rounded-full animate-pulse" style={{
           left: `${Math.random() * 100}%`,
           top: `${Math.random() * 100}%`,
           animationDelay: `${Math.random() * 3}s`,
@@ -102,17 +103,17 @@ const Index = () => {
         </div>
         
         {/* Interactive gradient orbs */}
-        <div className="absolute w-96 h-96 bg-gradient-to-r from-white/20 to-yellow-200/20 rounded-full blur-3xl animate-pulse transition-transform duration-1000 ease-out" style={{
+        <div className="absolute w-96 h-96 bg-gradient-to-r from-orange-400/30 to-yellow-200/30 rounded-full blur-3xl animate-pulse transition-transform duration-1000 ease-out" style={{
         transform: `translate(${mousePosition.x * 0.5}px, ${mousePosition.y * 0.3}px)`,
         top: '-10%',
         right: '-10%'
       }} />
-        <div className="absolute w-80 h-80 bg-gradient-to-l from-white/15 to-purple-200/15 rounded-full blur-3xl animate-pulse delay-1000 transition-transform duration-1000 ease-out" style={{
+        <div className="absolute w-80 h-80 bg-gradient-to-l from-purple-400/25 to-pink-200/25 rounded-full blur-3xl animate-pulse delay-1000 transition-transform duration-1000 ease-out" style={{
         transform: `translate(${mousePosition.x * -0.3}px, ${mousePosition.y * 0.4}px)`,
         top: '40%',
         left: '-15%'
       }} />
-        <div className="absolute w-64 h-64 bg-gradient-to-br from-blue-200/20 to-white/10 rounded-full blur-3xl animate-pulse delay-2000 transition-transform duration-1000 ease-out" style={{
+        <div className="absolute w-64 h-64 bg-gradient-to-br from-blue-400/20 to-cyan-200/20 rounded-full blur-3xl animate-pulse delay-2000 transition-transform duration-1000 ease-out" style={{
         transform: `translate(${mousePosition.x * 0.2}px, ${mousePosition.y * -0.2}px)`,
         bottom: '10%',
         right: '20%'
@@ -128,52 +129,52 @@ const Index = () => {
               <div className="space-y-6">
                 {/* Animated greeting */}
                 <div className="flex items-center space-x-2 text-white/90">
-                  <Sparkles className="h-6 w-6 animate-pulse" />
+                  <Sparkles className="h-6 w-6 animate-pulse text-orange-400" />
                   <span className="text-lg font-medium tracking-wide">Welcome to my digital space</span>
                 </div>
                 
-                <h1 className="text-4xl md:text-6xl font-bold text-gray-800 leading-tight">
+                <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight">
                   Hello, I'm
                   <br />
-                  <span className="text-orange-600 relative">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-400 relative">
                     DINESH KUMAR S
-                    <div className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-orange-400 to-red-400 rounded-full transform scale-x-0 animate-[scale-x-100_1s_ease-out_1s_forwards]"></div>
+                    <div className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-orange-400 to-pink-400 rounded-full transform scale-x-0 animate-[scale-x-100_1s_ease-out_1s_forwards]"></div>
                   </span>
                 </h1>
                 
                 <div className="flex items-start space-x-4">
                   <div className="flex flex-col space-y-2">
-                    <div className="flex items-center space-x-2 text-white/80">
+                    <div className="flex items-center space-x-2 text-orange-300">
                       <Code className="h-5 w-5" />
-                      <span className="text-lg">Tech Enthusiast</span>
+                      <span className="text-lg font-medium">Tech Enthusiast</span>
                     </div>
-                    <div className="flex items-center space-x-2 text-white/80">
+                    <div className="flex items-center space-x-2 text-pink-300">
                       <Zap className="h-5 w-5" />
-                      <span className="text-lg">Innovation Driver</span>
+                      <span className="text-lg font-medium">Innovation Driver</span>
                     </div>
                   </div>
                 </div>
                 
-                <p className="text-lg md:text-xl text-gray-700 max-w-2xl leading-relaxed">
+                <p className="text-lg md:text-xl text-gray-300 max-w-2xl leading-relaxed">
                   A tech enthusiast bridging Electronics, AI, and Data Science to build smart, impactful solutions.
                 </p>
               </div>
 
-              <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 relative group">
+              <Card className="bg-white/10 backdrop-blur-lg border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 relative group">
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={handleEditMission}
-                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
+                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0 border-white/30 hover:bg-white/20"
                 >
-                  <Edit className="h-3 w-3" />
+                  <Edit className="h-3 w-3 text-white" />
                 </Button>
                 <CardContent className="p-8">
                   <div className="flex items-start space-x-4">
-                    <div className="w-1 h-16 bg-gradient-to-b from-orange-400 to-red-400 rounded-full"></div>
+                    <div className="w-1 h-16 bg-gradient-to-b from-orange-400 to-pink-400 rounded-full"></div>
                     <div>
-                      <h3 className="font-semibold text-gray-800 mb-2">My Mission</h3>
-                      <p className="text-gray-700 leading-relaxed">
+                      <h3 className="font-semibold text-white mb-2">My Mission</h3>
+                      <p className="text-gray-300 leading-relaxed">
                         {missionText}
                       </p>
                     </div>
@@ -184,13 +185,13 @@ const Index = () => {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
                   onClick={handleDownloadResume}
-                  className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                 >
                   <Download className="mr-2 h-5 w-5" />
                   {resumeFile ? 'Download Resume' : 'Upload & Download Resume'}
                 </Button>
                 <Link to="/projects">
-                  <Button variant="outline" className="border-2 border-white/80 text-gray-700 hover:bg-white/90 px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                  <Button variant="outline" className="border-2 border-white/30 text-white hover:bg-white/10 px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                     View Projects
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
@@ -198,13 +199,13 @@ const Index = () => {
               </div>
 
               <div className="flex space-x-8">
-                <a href="https://linkedin.com" className="text-white hover:text-orange-200 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1">
+                <a href="https://linkedin.com" className="text-white hover:text-orange-400 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1">
                   <Linkedin className="h-8 w-8" />
                 </a>
-                <a href="https://github.com" className="text-white hover:text-orange-200 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1">
+                <a href="https://github.com" className="text-white hover:text-orange-400 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1">
                   <Github className="h-8 w-8" />
                 </a>
-                <a href="mailto:dineshkumar22106007@gmail.com" className="text-white hover:text-orange-200 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1">
+                <a href="mailto:dineshkumar22106007@gmail.com" className="text-white hover:text-orange-400 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1">
                   <Mail className="h-8 w-8" />
                 </a>
               </div>
@@ -348,7 +349,6 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Mission Edit Dialog */}
       <Dialog open={isMissionEditOpen} onOpenChange={setIsMissionEditOpen}>
         <DialogContent>
           <DialogHeader>
