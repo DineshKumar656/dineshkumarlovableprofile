@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +16,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { ExternalLink, Github, Droplets, Sprout, TrafficCone, Truck, Bot, Sparkles, Zap, Code2, Edit, Trash2, Plus } from "lucide-react";
+import { ExternalLink, Github, Droplets, Sprout, TrafficCone, Truck, Bot, Sparkles, Zap, Code2, Edit, Trash2, Plus, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Project {
@@ -24,8 +25,10 @@ interface Project {
   icon: any;
   description: string;
   longDescription: string;
+  briefDescription: string;
   tech: string[];
   image: string;
+  video?: string;
   demoUrl: string;
   githubUrl: string;
   featured: boolean;
@@ -55,6 +58,7 @@ const Projects = () => {
       icon: Sprout,
       description: "AI-powered irrigation system with Firebase integration and Telegram notifications for optimal crop watering.",
       longDescription: "Developed an intelligent irrigation system that uses AI algorithms to analyze soil moisture, weather data, and crop requirements. The system automatically controls water distribution and sends real-time updates via Telegram bot. Firebase backend ensures reliable data storage and synchronization.",
+      briefDescription: "AI-powered smart irrigation with automated watering control",
       tech: ["Python", "AI/ML", "Firebase", "Telegram API", "IoT Sensors"],
       image: "/api/placeholder/400/250",
       demoUrl: "#",
@@ -67,10 +71,12 @@ const Projects = () => {
       icon: Droplets,
       description: "Smart water level monitoring system with OLED display and Blynk cloud integration for remote monitoring.",
       longDescription: "Created a comprehensive water level monitoring solution using ultrasonic sensors, OLED displays, and cloud connectivity. Users can monitor water levels remotely through the Blynk mobile app and receive alerts when levels are critically low or high.",
+      briefDescription: "Real-time water level monitoring with mobile alerts",
       tech: ["ESP32", "Blynk", "OLED", "Ultrasonic Sensors", "IoT"],
       image: "/api/placeholder/400/250",
       demoUrl: "#",
-      githubUrl: "#"
+      githubUrl: "#",
+      featured: false
     },
     {
       id: 3,
@@ -78,10 +84,12 @@ const Projects = () => {
       icon: TrafficCone,
       description: "Intelligent traffic management system using Wokwi simulation and ThingSpeak for traffic flow optimization.",
       longDescription: "Designed and simulated a smart traffic light system that adapts to real-time traffic conditions. The system uses sensors to detect vehicle density and adjusts light timing accordingly, reducing wait times and improving traffic flow efficiency.",
+      briefDescription: "Adaptive traffic control system for improved flow",
       tech: ["Wokwi", "ThingSpeak", "Arduino", "Traffic Simulation", "IoT"],
       image: "/api/placeholder/400/250",
       demoUrl: "#",
-      githubUrl: "#"
+      githubUrl: "#",
+      featured: false
     },
     {
       id: 4,
@@ -89,10 +97,12 @@ const Projects = () => {
       icon: Truck,
       description: "Real-time heavy vehicle tracking and monitoring system with ESP32, Blynk integration, and alert mechanisms.",
       longDescription: "Developed a comprehensive monitoring system for heavy vehicles including GPS tracking, speed monitoring, and maintenance alerts. The system provides real-time dashboards for fleet managers and automatic notifications for unusual activities.",
+      briefDescription: "GPS-based fleet tracking with maintenance alerts",
       tech: ["ESP32", "Blynk", "GPS", "Sensors", "Fleet Management"],
       image: "/api/placeholder/400/250",
       demoUrl: "#",
-      githubUrl: "#"
+      githubUrl: "#",
+      featured: false
     },
     {
       id: 5,
@@ -100,10 +110,12 @@ const Projects = () => {
       icon: Bot,
       description: "Intelligent chatbot built with Python featuring natural language processing and context-aware responses.",
       longDescription: "Created an advanced conversational AI bot using Python and natural language processing libraries. The bot can understand context, maintain conversation flow, and provide intelligent responses across various topics.",
+      briefDescription: "Context-aware chatbot with NLP capabilities",
       tech: ["Python", "NLP", "Machine Learning", "Chatbot", "AI"],
       image: "/api/placeholder/400/250",
       demoUrl: "#",
-      githubUrl: "#"
+      githubUrl: "#",
+      featured: false
     }
   ]);
 
@@ -111,12 +123,37 @@ const Projects = () => {
     title: '',
     description: '',
     longDescription: '',
+    briefDescription: '',
     tech: '',
     demoUrl: '',
     githubUrl: '',
     featured: false,
-    iconName: 'Code2'
+    iconName: 'Code2',
+    image: '',
+    video: ''
   });
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setProjectForm(prev => ({ ...prev, image: e.target?.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setProjectForm(prev => ({ ...prev, video: e.target?.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleEditProject = (project: Project) => {
     setEditingProject(project);
@@ -124,11 +161,14 @@ const Projects = () => {
       title: project.title,
       description: project.description,
       longDescription: project.longDescription,
+      briefDescription: project.briefDescription,
       tech: project.tech.join(', '),
       demoUrl: project.demoUrl,
       githubUrl: project.githubUrl,
       featured: project.featured,
-      iconName: iconOptions.find(icon => icon.component === project.icon)?.name || 'Code2'
+      iconName: iconOptions.find(icon => icon.component === project.icon)?.name || 'Code2',
+      image: project.image || '',
+      video: project.video || ''
     });
     setIsEditModalOpen(true);
   };
@@ -157,12 +197,14 @@ const Projects = () => {
       title: projectForm.title.trim(),
       description: projectForm.description.trim(),
       longDescription: projectForm.longDescription.trim(),
+      briefDescription: projectForm.briefDescription.trim(),
       tech: projectForm.tech.split(',').map(t => t.trim()).filter(t => t),
       demoUrl: projectForm.demoUrl.trim(),
       githubUrl: projectForm.githubUrl.trim(),
       featured: projectForm.featured,
       icon: selectedIcon,
-      image: "/api/placeholder/400/250"
+      image: projectForm.image || "/api/placeholder/400/250",
+      video: projectForm.video
     };
 
     if (editingProject) {
@@ -194,11 +236,14 @@ const Projects = () => {
       title: '',
       description: '',
       longDescription: '',
+      briefDescription: '',
       tech: '',
       demoUrl: '',
       githubUrl: '',
       featured: false,
-      iconName: 'Code2'
+      iconName: 'Code2',
+      image: '',
+      video: ''
     });
   };
 
@@ -208,13 +253,11 @@ const Projects = () => {
       
       {/* Enhanced animated background */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Floating geometric shapes */}
         <div className="absolute top-20 left-10 w-20 h-20 bg-green-200/30 rounded-full animate-pulse"></div>
         <div className="absolute top-40 right-20 w-16 h-16 bg-teal-200/30 rotate-45 animate-pulse delay-1000"></div>
         <div className="absolute bottom-40 left-20 w-12 h-12 bg-emerald-200/30 rounded-full animate-pulse delay-2000"></div>
         <div className="absolute bottom-20 right-40 w-24 h-24 bg-green-300/20 rotate-12 animate-pulse delay-500"></div>
         
-        {/* Gradient orbs */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-green-200/20 to-transparent rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-teal-200/20 to-transparent rounded-full blur-3xl"></div>
       </div>
@@ -235,7 +278,6 @@ const Projects = () => {
               </span>
               <span className="text-gray-900"> Portfolio</span>
               
-              {/* Decorative underline */}
               <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-green-400 to-teal-400 rounded-full"></div>
             </h1>
             
@@ -244,7 +286,6 @@ const Projects = () => {
                 Innovative solutions spanning IoT, AI, and smart systems development
               </p>
               
-              {/* Feature highlights */}
               <div className="flex flex-wrap justify-center gap-6 mb-8">
                 <div className="flex items-center space-x-2 bg-white/70 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg">
                   <Code2 className="h-5 w-5 text-green-600" />
@@ -262,7 +303,6 @@ const Projects = () => {
             </div>
           </div>
 
-          {/* Add New Project Button */}
           <div className="text-center mb-8">
             <Button
               onClick={() => setIsAddModalOpen(true)}
@@ -273,7 +313,6 @@ const Projects = () => {
             </Button>
           </div>
 
-          {/* Enhanced project grid */}
           <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-8">
             {projects.map((project) => {
               const IconComponent = project.icon;
@@ -327,9 +366,20 @@ const Projects = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="aspect-video bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl mb-4 flex items-center justify-center group-hover:from-green-50 group-hover:to-emerald-50 transition-all duration-300 border border-gray-200">
-                      <IconComponent className="h-16 w-16 text-gray-400 group-hover:text-green-500 transition-colors duration-300" />
+                    <div className="aspect-video bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl mb-4 flex items-center justify-center group-hover:from-green-50 group-hover:to-emerald-50 transition-all duration-300 border border-gray-200 overflow-hidden">
+                      {project.image && project.image !== "/api/placeholder/400/250" ? (
+                        <img src={project.image} alt={project.title} className="w-full h-full object-cover rounded-xl" />
+                      ) : (
+                        <IconComponent className="h-16 w-16 text-gray-400 group-hover:text-green-500 transition-colors duration-300" />
+                      )}
                     </div>
+                    
+                    {project.briefDescription && (
+                      <p className="text-sm text-green-600 font-medium mb-2 italic">
+                        {project.briefDescription}
+                      </p>
+                    )}
+                    
                     <p className="text-gray-700 mb-4 line-clamp-3 leading-relaxed">
                       {project.description}
                     </p>
@@ -364,7 +414,7 @@ const Projects = () => {
           {/* Project Modal */}
           {selectedProject && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-              <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
+              <Card className="max-w-4xl w-full max-h-[90vh] overflow-y-auto bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
                 <CardHeader className="border-b border-gray-100">
                   <div className="flex justify-between items-start">
                     <CardTitle className="text-2xl text-gray-900 flex items-center space-x-3">
@@ -386,11 +436,30 @@ const Projects = () => {
                   </div>
                 </CardHeader>
                 <CardContent className="p-8">
-                  <div className="aspect-video bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl mb-6 flex items-center justify-center border border-green-100">
-                    {React.createElement(selectedProject.icon, {
-                      className: "h-20 w-20 text-green-500"
-                    })}
+                  <div className="grid md:grid-cols-2 gap-6 mb-6">
+                    <div className="aspect-video bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl flex items-center justify-center border border-green-100 overflow-hidden">
+                      {selectedProject.image && selectedProject.image !== "/api/placeholder/400/250" ? (
+                        <img src={selectedProject.image} alt={selectedProject.title} className="w-full h-full object-cover rounded-xl" />
+                      ) : (
+                        React.createElement(selectedProject.icon, {
+                          className: "h-20 w-20 text-green-500"
+                        })
+                      )}
+                    </div>
+                    {selectedProject.video && (
+                      <div className="aspect-video bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl flex items-center justify-center border border-green-100 overflow-hidden">
+                        <video src={selectedProject.video} controls className="w-full h-full object-cover rounded-xl" />
+                      </div>
+                    )}
                   </div>
+                  
+                  {selectedProject.briefDescription && (
+                    <div className="mb-4">
+                      <h4 className="font-semibold text-gray-900 mb-2 text-lg">Brief Overview:</h4>
+                      <p className="text-green-600 font-medium italic">{selectedProject.briefDescription}</p>
+                    </div>
+                  )}
+                  
                   <p className="text-gray-700 mb-6 leading-relaxed text-lg">
                     {selectedProject.longDescription}
                   </p>
@@ -429,7 +498,7 @@ const Projects = () => {
           setEditingProject(null);
         }
       }}>
-        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingProject ? 'Edit Project' : 'Add New Project'}</DialogTitle>
             <DialogDescription>
@@ -445,6 +514,16 @@ const Projects = () => {
                 onChange={(e) => setProjectForm(prev => ({ ...prev, title: e.target.value }))}
                 className="col-span-3"
                 placeholder="Project title"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="project-brief" className="text-right mt-2">Brief Description</Label>
+              <Input
+                id="project-brief"
+                value={projectForm.briefDescription}
+                onChange={(e) => setProjectForm(prev => ({ ...prev, briefDescription: e.target.value }))}
+                className="col-span-3"
+                placeholder="Short one-liner about the project"
               />
             </div>
             <div className="grid grid-cols-4 items-start gap-4">
@@ -468,6 +547,38 @@ const Projects = () => {
                 placeholder="Detailed description"
                 rows={4}
               />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="project-image" className="text-right">Project Image</Label>
+              <div className="col-span-3 space-y-2">
+                <Input
+                  id="project-image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                />
+                {projectForm.image && (
+                  <div className="w-32 h-20 border rounded overflow-hidden">
+                    <img src={projectForm.image} alt="Preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="project-video" className="text-right">Project Video</Label>
+              <div className="col-span-3 space-y-2">
+                <Input
+                  id="project-video"
+                  type="file"
+                  accept="video/*"
+                  onChange={handleVideoUpload}
+                />
+                {projectForm.video && (
+                  <div className="w-32 h-20 border rounded overflow-hidden">
+                    <video src={projectForm.video} className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="project-tech" className="text-right">Technologies</Label>

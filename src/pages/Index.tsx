@@ -1,10 +1,22 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Download, ArrowRight, Github, Linkedin, Mail, Sparkles, Code, Zap } from "lucide-react";
+import { Download, ArrowRight, Github, Linkedin, Mail, Sparkles, Code, Zap, Upload, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import Navigation from "@/components/Navigation";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -12,6 +24,12 @@ const Index = () => {
     x: 0,
     y: 0
   });
+  const [resumeFile, setResumeFile] = useState<string | null>(null);
+  const [isResumeDialogOpen, setIsResumeDialogOpen] = useState(false);
+  const [isMissionEditOpen, setIsMissionEditOpen] = useState(false);
+  const [missionText, setMissionText] = useState("Final-year ECE student passionate about smart systems, real-time IoT monitoring, and AI-based analytics. My goal is to become a cross-domain professional, using modern technology to solve real-world challenges.");
+  const [editingMission, setEditingMission] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
     setIsVisible(true);
@@ -24,6 +42,48 @@ const Index = () => {
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
+
+  const handleResumeUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setResumeFile(e.target?.result as string);
+        toast({
+          title: "Resume Uploaded",
+          description: "Your resume has been uploaded successfully!",
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDownloadResume = () => {
+    if (resumeFile) {
+      const link = document.createElement('a');
+      link.href = resumeFile;
+      link.download = 'Dinesh_Kumar_Resume.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      setIsResumeDialogOpen(true);
+    }
+  };
+
+  const handleSaveMission = () => {
+    setMissionText(editingMission);
+    setIsMissionEditOpen(false);
+    toast({
+      title: "Mission Updated",
+      description: "Your mission statement has been updated successfully!",
+    });
+  };
+
+  const handleEditMission = () => {
+    setEditingMission(missionText);
+    setIsMissionEditOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-400 via-red-400 to-pink-400 relative overflow-hidden">
@@ -99,15 +159,22 @@ const Index = () => {
                 </p>
               </div>
 
-              <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105">
+              <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 relative group">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleEditMission}
+                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
+                >
+                  <Edit className="h-3 w-3" />
+                </Button>
                 <CardContent className="p-8">
                   <div className="flex items-start space-x-4">
                     <div className="w-1 h-16 bg-gradient-to-b from-orange-400 to-red-400 rounded-full"></div>
                     <div>
                       <h3 className="font-semibold text-gray-800 mb-2">My Mission</h3>
                       <p className="text-gray-700 leading-relaxed">
-                        Final-year ECE student passionate about smart systems, real-time IoT monitoring, and AI-based analytics. 
-                        My goal is to become a cross-domain professional, using modern technology to solve real-world challenges.
+                        {missionText}
                       </p>
                     </div>
                   </div>
@@ -115,9 +182,12 @@ const Index = () => {
               </Card>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                <Button 
+                  onClick={handleDownloadResume}
+                  className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                >
                   <Download className="mr-2 h-5 w-5" />
-                  Download Resume
+                  {resumeFile ? 'Download Resume' : 'Upload & Download Resume'}
                 </Button>
                 <Link to="/projects">
                   <Button variant="outline" className="border-2 border-white/80 text-gray-700 hover:bg-white/90 px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
@@ -202,8 +272,8 @@ const Index = () => {
                 <Card className="absolute -top-6 -right-6 bg-white/95 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-2">
                   <CardContent className="p-6">
                     <div className="text-center">
-                      <div className="text-sm text-orange-600 font-medium">UI/UX</div>
-                      <div className="font-bold text-gray-800 text-lg">Designer</div>
+                      <div className="text-sm text-orange-600 font-medium">Cross-Domain</div>
+                      <div className="font-bold text-gray-800 text-lg">Professional</div>
                       <div className="w-8 h-1 bg-gradient-to-r from-orange-400 to-red-400 rounded-full mx-auto mt-2"></div>
                     </div>
                   </CardContent>
@@ -248,6 +318,68 @@ const Index = () => {
           </div>
         </div>
       </div>
+
+      {/* Resume Upload Dialog */}
+      <Dialog open={isResumeDialogOpen} onOpenChange={setIsResumeDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Upload Resume</DialogTitle>
+            <DialogDescription>
+              Please upload your resume to enable the download feature.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="resume-upload" className="text-right">Resume</Label>
+              <Input
+                id="resume-upload"
+                type="file"
+                accept=".pdf,.doc,.docx"
+                onChange={handleResumeUpload}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsResumeDialogOpen(false)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Mission Edit Dialog */}
+      <Dialog open={isMissionEditOpen} onOpenChange={setIsMissionEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Mission Statement</DialogTitle>
+            <DialogDescription>
+              Update your personal mission statement.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="mission-text" className="text-right mt-2">Mission</Label>
+              <Textarea
+                id="mission-text"
+                value={editingMission}
+                onChange={(e) => setEditingMission(e.target.value)}
+                className="col-span-3"
+                rows={5}
+                placeholder="Enter your mission statement..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsMissionEditOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveMission}>
+              Save Mission
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -5,9 +5,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, Linkedin, Github, MapPin, Send } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Mail, Linkedin, Github, MapPin, Send, Edit, Trash2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import emailjs from '@emailjs/browser';
+
+interface ContactMethod {
+  id: number;
+  icon: any;
+  title: string;
+  value: string;
+  href: string;
+  color: string;
+}
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -17,26 +35,76 @@ const Contact = () => {
     message: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditContactOpen, setIsEditContactOpen] = useState(false);
+  const [isAddContactOpen, setIsAddContactOpen] = useState(false);
+  const [editingContact, setEditingContact] = useState<ContactMethod | null>(null);
+  const [contactForm, setContactForm] = useState({
+    title: '',
+    value: '',
+    href: '',
+    color: 'blue',
+    iconName: 'Mail'
+  });
   const { toast } = useToast();
 
-  // Initialize EmailJS with your public key
   emailjs.init("55CVjW3UXMY9RvWEj");
+
+  const iconOptions = [
+    { name: 'Mail', component: Mail },
+    { name: 'Linkedin', component: Linkedin },
+    { name: 'Github', component: Github },
+    { name: 'MapPin', component: MapPin },
+  ];
+
+  const [contactMethods, setContactMethods] = useState<ContactMethod[]>([
+    {
+      id: 1,
+      icon: Mail,
+      title: "Email",
+      value: "dineshkumar22106007@gmail.com",
+      href: "mailto:dineshkumar22106007@gmail.com",
+      color: "blue"
+    },
+    {
+      id: 2,
+      icon: Linkedin,
+      title: "LinkedIn",
+      value: "Connect with me",
+      href: "https://linkedin.com",
+      color: "blue"
+    },
+    {
+      id: 3,
+      icon: Github,
+      title: "GitHub",
+      value: "View my repositories",
+      href: "https://github.com",
+      color: "gray"
+    },
+    {
+      id: 4,
+      icon: MapPin,
+      title: "Location",
+      value: "Tamil Nadu, India",
+      href: "#",
+      color: "green"
+    }
+  ]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      // Send email using EmailJS
       const result = await emailjs.send(
-        "service_mityeeo", // service ID
-        "template_o8jbcbs", // template ID
+        "service_mityeeo",
+        "template_o8jbcbs",
         {
           from_name: formData.name,
           from_email: formData.email,
           subject: formData.subject,
           message: formData.message,
-          to_name: "Dinesh Kumar", // Your name
+          to_name: "Dinesh Kumar",
         }
       );
 
@@ -47,7 +115,6 @@ const Contact = () => {
         description: "Thank you for your message. I'll get back to you soon!",
       });
       
-      // Reset form
       setFormData({ name: "", email: "", subject: "", message: "" });
     } catch (error) {
       console.error('Failed to send email:', error);
@@ -69,36 +136,79 @@ const Contact = () => {
     });
   };
 
-  const contactMethods = [
-    {
-      icon: Mail,
-      title: "Email",
-      value: "dineshkumar22106007@gmail.com",
-      href: "mailto:dineshkumar22106007@gmail.com",
-      color: "blue"
-    },
-    {
-      icon: Linkedin,
-      title: "LinkedIn",
-      value: "Connect with me",
-      href: "https://linkedin.com",
-      color: "blue"
-    },
-    {
-      icon: Github,
-      title: "GitHub",
-      value: "View my repositories",
-      href: "https://github.com",
-      color: "gray"
-    },
-    {
-      icon: MapPin,
-      title: "Location",
-      value: "Tamil Nadu, India",
-      href: "#",
-      color: "green"
+  const handleEditContact = (contact: ContactMethod) => {
+    setEditingContact(contact);
+    setContactForm({
+      title: contact.title,
+      value: contact.value,
+      href: contact.href,
+      color: contact.color,
+      iconName: iconOptions.find(icon => icon.component === contact.icon)?.name || 'Mail'
+    });
+    setIsEditContactOpen(true);
+  };
+
+  const handleDeleteContact = (id: number) => {
+    setContactMethods(prev => prev.filter(contact => contact.id !== id));
+    toast({
+      title: "Contact Method Deleted",
+      description: "The contact method has been successfully removed.",
+    });
+  };
+
+  const handleSaveContact = () => {
+    if (!contactForm.title.trim() || !contactForm.value.trim()) {
+      toast({
+        title: "Error",
+        description: "Title and value are required.",
+        variant: "destructive",
+      });
+      return;
     }
-  ];
+
+    const selectedIcon = iconOptions.find(icon => icon.name === contactForm.iconName)?.component || Mail;
+    
+    const contactData = {
+      title: contactForm.title.trim(),
+      value: contactForm.value.trim(),
+      href: contactForm.href.trim(),
+      color: contactForm.color,
+      icon: selectedIcon
+    };
+
+    if (editingContact) {
+      setContactMethods(prev => prev.map(contact => 
+        contact.id === editingContact.id 
+          ? { ...contact, ...contactData }
+          : contact
+      ));
+      toast({
+        title: "Contact Method Updated",
+        description: "The contact method has been successfully updated.",
+      });
+    } else {
+      const newContact = {
+        ...contactData,
+        id: Math.max(...contactMethods.map(c => c.id)) + 1
+      };
+      setContactMethods(prev => [...prev, newContact]);
+      toast({
+        title: "Contact Method Added",
+        description: "The new contact method has been successfully added.",
+      });
+    }
+
+    setIsEditContactOpen(false);
+    setIsAddContactOpen(false);
+    setEditingContact(null);
+    setContactForm({
+      title: '',
+      value: '',
+      href: '',
+      color: 'blue',
+      iconName: 'Mail'
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 to-blue-100">
@@ -207,13 +317,22 @@ const Contact = () => {
               </CardContent>
             </Card>
 
-            {/* Contact Information */}
             <div className="space-y-8">
               <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
                 <CardHeader>
-                  <CardTitle className="text-2xl text-gray-900">
-                    Get in Touch
-                  </CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-2xl text-gray-900">
+                      Get in Touch
+                    </CardTitle>
+                    <Button
+                      onClick={() => setIsAddContactOpen(true)}
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Plus className="mr-1 h-4 w-4" />
+                      Add Contact
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-700 leading-relaxed mb-6">
@@ -223,28 +342,53 @@ const Contact = () => {
                   </p>
                   
                   <div className="space-y-4">
-                    {contactMethods.map((method, index) => {
+                    {contactMethods.map((method) => {
                       const IconComponent = method.icon;
                       return (
-                        <a
-                          key={index}
-                          href={method.href}
-                          className="flex items-center p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors group"
-                        >
-                          <div className={`p-3 rounded-full mr-4 bg-gradient-to-r ${
-                            method.color === 'blue' ? 'from-blue-400 to-blue-600' :
-                            method.color === 'gray' ? 'from-gray-400 to-gray-600' :
-                            'from-green-400 to-green-600'
-                          } text-white`}>
-                            <IconComponent className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <div className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                              {method.title}
+                        <div key={method.id} className="relative group">
+                          <a
+                            href={method.href}
+                            className="flex items-center p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors w-full"
+                          >
+                            <div className={`p-3 rounded-full mr-4 bg-gradient-to-r ${
+                              method.color === 'blue' ? 'from-blue-400 to-blue-600' :
+                              method.color === 'gray' ? 'from-gray-400 to-gray-600' :
+                              'from-green-400 to-green-600'
+                            } text-white`}>
+                              <IconComponent className="h-5 w-5" />
                             </div>
-                            <div className="text-gray-600">{method.value}</div>
+                            <div className="flex-1">
+                              <div className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                                {method.title}
+                              </div>
+                              <div className="text-gray-600">{method.value}</div>
+                            </div>
+                          </a>
+                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleEditContact(method);
+                              }}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleDeleteContact(method.id);
+                              }}
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
                           </div>
-                        </a>
+                        </div>
                       );
                     })}
                   </div>
@@ -272,7 +416,6 @@ const Contact = () => {
                 </CardContent>
               </Card>
 
-              {/* Availability */}
               <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle className="text-xl text-gray-900">
@@ -294,6 +437,80 @@ const Contact = () => {
           </div>
         </div>
       </div>
+
+      {/* Add/Edit Contact Method Modal */}
+      <Dialog open={isEditContactOpen || isAddContactOpen} onOpenChange={(open) => {
+        if (!open) {
+          setIsEditContactOpen(false);
+          setIsAddContactOpen(false);
+          setEditingContact(null);
+        }
+      }}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{editingContact ? 'Edit Contact Method' : 'Add Contact Method'}</DialogTitle>
+            <DialogDescription>
+              {editingContact ? 'Update contact method details' : 'Add a new way for people to contact you'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="contact-title" className="text-right">Title</Label>
+              <Input
+                id="contact-title"
+                value={contactForm.title}
+                onChange={(e) => setContactForm(prev => ({ ...prev, title: e.target.value }))}
+                className="col-span-3"
+                placeholder="e.g., Email, Phone, LinkedIn"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="contact-value" className="text-right">Value</Label>
+              <Input
+                id="contact-value"
+                value={contactForm.value}
+                onChange={(e) => setContactForm(prev => ({ ...prev, value: e.target.value }))}
+                className="col-span-3"
+                placeholder="Display text"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="contact-href" className="text-right">Link</Label>
+              <Input
+                id="contact-href"
+                value={contactForm.href}
+                onChange={(e) => setContactForm(prev => ({ ...prev, href: e.target.value }))}
+                className="col-span-3"
+                placeholder="URL or link"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="contact-color" className="text-right">Color</Label>
+              <select
+                id="contact-color"
+                value={contactForm.color}
+                onChange={(e) => setContactForm(prev => ({ ...prev, color: e.target.value }))}
+                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+              >
+                <option value="blue">Blue</option>
+                <option value="gray">Gray</option>
+                <option value="green">Green</option>
+              </select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setIsEditContactOpen(false);
+              setIsAddContactOpen(false);
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveContact}>
+              {editingContact ? 'Update Contact' : 'Add Contact'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
