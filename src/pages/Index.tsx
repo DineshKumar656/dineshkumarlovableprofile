@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Navigation from "@/components/Navigation";
+
 const Index = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [mousePosition, setMousePosition] = useState({
     x: 0,
     y: 0
   });
+
   useEffect(() => {
     setIsVisible(true);
     const handleMouseMove = (e: MouseEvent) => {
@@ -22,7 +24,9 @@ const Index = () => {
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
-  return <div className="min-h-screen bg-gradient-to-br from-orange-400 via-red-400 to-pink-400 relative overflow-hidden">
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-orange-400 via-red-400 to-pink-400 relative overflow-hidden">
       <Navigation />
       
       {/* Enhanced animated background with mouse parallax */}
@@ -162,11 +166,17 @@ const Index = () => {
                     {/* Animated glow effect */}
                     <div className="absolute inset-0 bg-gradient-to-br from-orange-400/20 to-red-400/20 rounded-full animate-pulse"></div>
                     
-                    {/* Profile photo with better positioning */}
+                    {/* Profile photo with improved positioning for face visibility */}
                     <Avatar className="w-72 h-72 relative z-10 transition-all duration-300 group-hover:scale-105">
-                      <AvatarImage src="https://i.postimg.cc/xdjSLxvZ/IMG-20240924-WA0068.jpg" alt="Dinesh Kumar S" className="object-cover object-center rounded-full" style={{
-                      objectPosition: '50% 20%'
-                    }} />
+                      <AvatarImage 
+                        src="https://i.postimg.cc/xdjSLxvZ/IMG-20240924-WA0068.jpg" 
+                        alt="Dinesh Kumar S" 
+                        className="object-cover rounded-full scale-110 translate-y-[-10px]"
+                        style={{
+                          objectPosition: '50% 35%',
+                          objectFit: 'cover'
+                        }} 
+                      />
                       <AvatarFallback className="bg-gradient-to-br from-gray-200 to-gray-300 text-gray-600 text-lg font-medium">
                         DK
                       </AvatarFallback>
@@ -174,8 +184,8 @@ const Index = () => {
                     
                     {/* Rotating tech icons around the border */}
                     <div className="absolute inset-0 animate-spin" style={{
-                    animationDuration: '20s'
-                  }}>
+                      animationDuration: '20s'
+                    }}>
                       <Code className="absolute top-4 left-1/2 transform -translate-x-1/2 h-4 w-4 text-orange-400" />
                       <Zap className="absolute right-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-yellow-400" />
                       <Sparkles className="absolute bottom-4 left-1/2 transform -translate-x-1/2 h-4 w-4 text-pink-400" />
@@ -184,8 +194,8 @@ const Index = () => {
                   
                   {/* Outer rotating border effect */}
                   <div className="absolute inset-0 rounded-full border-2 border-transparent bg-gradient-to-r from-orange-400 via-red-400 to-pink-400 animate-spin opacity-60" style={{
-                  animationDuration: '8s'
-                }}></div>
+                    animationDuration: '8s'
+                  }}></div>
                 </div>
 
                 {/* Enhanced Floating Stats Cards */}
@@ -238,6 +248,8 @@ const Index = () => {
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Index;

@@ -3,12 +3,52 @@ import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Github, Droplets, Sprout, TrafficCone, Truck, Bot, Sparkles, Zap, Code2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { ExternalLink, Github, Droplets, Sprout, TrafficCone, Truck, Bot, Sparkles, Zap, Code2, Edit, Trash2, Plus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+interface Project {
+  id: number;
+  title: string;
+  icon: any;
+  description: string;
+  longDescription: string;
+  tech: string[];
+  image: string;
+  demoUrl: string;
+  githubUrl: string;
+  featured: boolean;
+}
 
 const Projects = () => {
-  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const { toast } = useToast();
 
-  const projects = [
+  const iconOptions = [
+    { name: 'Sprout', component: Sprout },
+    { name: 'Droplets', component: Droplets },
+    { name: 'TrafficCone', component: TrafficCone },
+    { name: 'Truck', component: Truck },
+    { name: 'Bot', component: Bot },
+    { name: 'Code2', component: Code2 },
+    { name: 'Zap', component: Zap }
+  ];
+
+  const [projects, setProjects] = useState<Project[]>([
     {
       id: 1,
       title: "Smart Irrigation System Using AI",
@@ -65,7 +105,102 @@ const Projects = () => {
       demoUrl: "#",
       githubUrl: "#"
     }
-  ];
+  ]);
+
+  const [projectForm, setProjectForm] = useState({
+    title: '',
+    description: '',
+    longDescription: '',
+    tech: '',
+    demoUrl: '',
+    githubUrl: '',
+    featured: false,
+    iconName: 'Code2'
+  });
+
+  const handleEditProject = (project: Project) => {
+    setEditingProject(project);
+    setProjectForm({
+      title: project.title,
+      description: project.description,
+      longDescription: project.longDescription,
+      tech: project.tech.join(', '),
+      demoUrl: project.demoUrl,
+      githubUrl: project.githubUrl,
+      featured: project.featured,
+      iconName: iconOptions.find(icon => icon.component === project.icon)?.name || 'Code2'
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleDeleteProject = (id: number) => {
+    setProjects(prev => prev.filter(project => project.id !== id));
+    toast({
+      title: "Project Deleted",
+      description: "The project has been successfully removed.",
+    });
+  };
+
+  const handleSaveProject = () => {
+    if (!projectForm.title.trim() || !projectForm.description.trim()) {
+      toast({
+        title: "Error",
+        description: "Title and description are required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const selectedIcon = iconOptions.find(icon => icon.name === projectForm.iconName)?.component || Code2;
+    
+    const projectData = {
+      title: projectForm.title.trim(),
+      description: projectForm.description.trim(),
+      longDescription: projectForm.longDescription.trim(),
+      tech: projectForm.tech.split(',').map(t => t.trim()).filter(t => t),
+      demoUrl: projectForm.demoUrl.trim(),
+      githubUrl: projectForm.githubUrl.trim(),
+      featured: projectForm.featured,
+      icon: selectedIcon,
+      image: "/api/placeholder/400/250"
+    };
+
+    if (editingProject) {
+      setProjects(prev => prev.map(project => 
+        project.id === editingProject.id 
+          ? { ...project, ...projectData }
+          : project
+      ));
+      toast({
+        title: "Project Updated",
+        description: "The project has been successfully updated.",
+      });
+    } else {
+      const newProject = {
+        ...projectData,
+        id: Math.max(...projects.map(p => p.id)) + 1
+      };
+      setProjects(prev => [...prev, newProject]);
+      toast({
+        title: "Project Added",
+        description: "The new project has been successfully added.",
+      });
+    }
+
+    setIsEditModalOpen(false);
+    setIsAddModalOpen(false);
+    setEditingProject(null);
+    setProjectForm({
+      title: '',
+      description: '',
+      longDescription: '',
+      tech: '',
+      demoUrl: '',
+      githubUrl: '',
+      featured: false,
+      iconName: 'Code2'
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-100 relative overflow-hidden">
@@ -127,6 +262,17 @@ const Projects = () => {
             </div>
           </div>
 
+          {/* Add New Project Button */}
+          <div className="text-center mb-8">
+            <Button
+              onClick={() => setIsAddModalOpen(true)}
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
+              <Plus className="mr-2 h-5 w-5" />
+              Add New Project
+            </Button>
+          </div>
+
           {/* Enhanced project grid */}
           <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-8">
             {projects.map((project) => {
@@ -144,11 +290,37 @@ const Projects = () => {
                       <div className="p-3 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl group-hover:from-green-200 group-hover:to-emerald-200 transition-all duration-300">
                         <IconComponent className="h-8 w-8 text-green-600" />
                       </div>
-                      {project.featured && (
-                        <Badge className="bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg">
-                          ⭐ Featured
-                        </Badge>
-                      )}
+                      <div className="flex items-center space-x-2">
+                        {project.featured && (
+                          <Badge className="bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg">
+                            ⭐ Featured
+                          </Badge>
+                        )}
+                        <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditProject(project);
+                            }}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteProject(project.id);
+                            }}
+                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                     <CardTitle className="text-xl text-gray-900 group-hover:text-green-600 transition-colors duration-300">
                       {project.title}
@@ -248,6 +420,109 @@ const Projects = () => {
           )}
         </div>
       </div>
+
+      {/* Add/Edit Project Modal */}
+      <Dialog open={isEditModalOpen || isAddModalOpen} onOpenChange={(open) => {
+        if (!open) {
+          setIsEditModalOpen(false);
+          setIsAddModalOpen(false);
+          setEditingProject(null);
+        }
+      }}>
+        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingProject ? 'Edit Project' : 'Add New Project'}</DialogTitle>
+            <DialogDescription>
+              {editingProject ? 'Update project details' : 'Add a new project to your portfolio'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="project-title" className="text-right">Title</Label>
+              <Input
+                id="project-title"
+                value={projectForm.title}
+                onChange={(e) => setProjectForm(prev => ({ ...prev, title: e.target.value }))}
+                className="col-span-3"
+                placeholder="Project title"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="project-description" className="text-right mt-2">Description</Label>
+              <Textarea
+                id="project-description"
+                value={projectForm.description}
+                onChange={(e) => setProjectForm(prev => ({ ...prev, description: e.target.value }))}
+                className="col-span-3"
+                placeholder="Short description"
+                rows={3}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="project-long-description" className="text-right mt-2">Long Description</Label>
+              <Textarea
+                id="project-long-description"
+                value={projectForm.longDescription}
+                onChange={(e) => setProjectForm(prev => ({ ...prev, longDescription: e.target.value }))}
+                className="col-span-3"
+                placeholder="Detailed description"
+                rows={4}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="project-tech" className="text-right">Technologies</Label>
+              <Input
+                id="project-tech"
+                value={projectForm.tech}
+                onChange={(e) => setProjectForm(prev => ({ ...prev, tech: e.target.value }))}
+                className="col-span-3"
+                placeholder="React, Node.js, MongoDB (comma-separated)"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="project-demo" className="text-right">Demo URL</Label>
+              <Input
+                id="project-demo"
+                value={projectForm.demoUrl}
+                onChange={(e) => setProjectForm(prev => ({ ...prev, demoUrl: e.target.value }))}
+                className="col-span-3"
+                placeholder="https://demo.example.com"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="project-github" className="text-right">GitHub URL</Label>
+              <Input
+                id="project-github"
+                value={projectForm.githubUrl}
+                onChange={(e) => setProjectForm(prev => ({ ...prev, githubUrl: e.target.value }))}
+                className="col-span-3"
+                placeholder="https://github.com/username/repo"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="project-featured" className="text-right">Featured</Label>
+              <div className="col-span-3">
+                <Switch
+                  id="project-featured"
+                  checked={projectForm.featured}
+                  onCheckedChange={(checked) => setProjectForm(prev => ({ ...prev, featured: checked }))}
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setIsEditModalOpen(false);
+              setIsAddModalOpen(false);
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveProject}>
+              {editingProject ? 'Update Project' : 'Add Project'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

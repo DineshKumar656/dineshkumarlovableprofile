@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +14,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Code, Database, Cpu, Users, Sparkles, Brain, Layers, Rocket, Edit, Trash2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Code, Database, Cpu, Users, Sparkles, Brain, Layers, Rocket, Edit, Trash2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Skill {
@@ -33,7 +35,9 @@ const Skills = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [editingSkill, setEditingSkill] = useState<{ categoryKey: string; skillIndex: number; skill: Skill } | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editForm, setEditForm] = useState({ name: "", level: 0 });
+  const [addForm, setAddForm] = useState({ name: "", level: 0, category: "" });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -162,6 +166,51 @@ const Skills = () => {
     setEditForm({ name: "", level: 0 });
   };
 
+  const handleAddSkill = () => {
+    if (!addForm.name.trim()) {
+      toast({
+        title: "Error",
+        description: "Skill name cannot be empty.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (addForm.level < 0 || addForm.level > 100) {
+      toast({
+        title: "Error",
+        description: "Skill level must be between 0 and 100.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!addForm.category) {
+      toast({
+        title: "Error",
+        description: "Please select a category.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSkillCategories(prev => ({
+      ...prev,
+      [addForm.category]: {
+        ...prev[addForm.category],
+        skills: [...prev[addForm.category].skills, { name: addForm.name.trim(), level: addForm.level }]
+      }
+    }));
+
+    toast({
+      title: "Skill Added",
+      description: `${addForm.name} has been added to ${skillCategories[addForm.category].title}.`,
+    });
+
+    setIsAddModalOpen(false);
+    setAddForm({ name: "", level: 0, category: "" });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 relative overflow-hidden">
       <Navigation />
@@ -257,7 +306,7 @@ const Skills = () => {
           </div>
 
           {/* Category Selector */}
-          <div className={`flex flex-wrap justify-center gap-4 mb-12 transform transition-all duration-1000 delay-300 ${
+          <div className={`flex flex-wrap justify-center gap-4 mb-8 transform transition-all duration-1000 delay-300 ${
             isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}>
             {Object.entries(skillCategories).map(([key, category]) => {
@@ -277,6 +326,17 @@ const Skills = () => {
                 </button>
               );
             })}
+          </div>
+
+          {/* Add New Skill Button */}
+          <div className="text-center mb-8">
+            <Button
+              onClick={() => setIsAddModalOpen(true)}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
+              <Plus className="mr-2 h-5 w-5" />
+              Add New Skill
+            </Button>
           </div>
 
           {/* Skills Display */}
@@ -404,6 +464,72 @@ const Skills = () => {
             </Button>
             <Button onClick={handleSaveEdit}>
               Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add New Skill Modal */}
+      <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Add New Skill</DialogTitle>
+            <DialogDescription>
+              Add a new skill to your portfolio.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="new-skill-name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="new-skill-name"
+                value={addForm.name}
+                onChange={(e) => setAddForm(prev => ({ ...prev, name: e.target.value }))}
+                className="col-span-3"
+                placeholder="Enter skill name"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="new-skill-level" className="text-right">
+                Level (%)
+              </Label>
+              <Input
+                id="new-skill-level"
+                type="number"
+                min="0"
+                max="100"
+                value={addForm.level}
+                onChange={(e) => setAddForm(prev => ({ ...prev, level: parseInt(e.target.value) || 0 }))}
+                className="col-span-3"
+                placeholder="0-100"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="new-skill-category" className="text-right">
+                Category
+              </Label>
+              <Select value={addForm.category} onValueChange={(value) => setAddForm(prev => ({ ...prev, category: value }))}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(skillCategories).map(([key, category]) => (
+                    <SelectItem key={key} value={key}>
+                      {category.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddSkill}>
+              Add Skill
             </Button>
           </DialogFooter>
         </DialogContent>

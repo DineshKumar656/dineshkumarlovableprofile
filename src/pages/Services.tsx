@@ -1,13 +1,49 @@
-
 import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BarChart3, Cpu, Brain, Settings, Presentation, Database, Sparkles, Wrench, Lightbulb } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BarChart3, Cpu, Brain, Settings, Presentation, Database, Sparkles, Wrench, Lightbulb, Edit, Trash2, Plus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+interface Service {
+  id: number;
+  icon: any;
+  title: string;
+  description: string;
+  features: string[];
+  color: string;
+}
 
 const Services = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingService, setEditingService] = useState<Service | null>(null);
+  const { toast } = useToast();
+
+  const iconOptions = [
+    { name: 'BarChart3', component: BarChart3 },
+    { name: 'Cpu', component: Cpu },
+    { name: 'Brain', component: Brain },
+    { name: 'Settings', component: Settings },
+    { name: 'Presentation', component: Presentation },
+    { name: 'Database', component: Database }
+  ];
+
+  const colorOptions = ['blue', 'green', 'purple', 'orange', 'pink', 'indigo'];
 
   useEffect(() => {
     setIsVisible(true);
@@ -23,8 +59,9 @@ const Services = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  const services = [
+  const [services, setServices] = useState<Service[]>([
     {
+      id: 1,
       icon: BarChart3,
       title: "Data Visualization with BI Tools",
       description: "Transform raw data into compelling visual stories using Power BI, Tableau, and advanced Excel features.",
@@ -96,7 +133,89 @@ const Services = () => {
       ],
       color: "indigo"
     }
-  ];
+  ]);
+
+  const [serviceForm, setServiceForm] = useState({
+    title: '',
+    description: '',
+    features: '',
+    color: 'blue',
+    iconName: 'Settings'
+  });
+
+  const handleEditService = (service: Service) => {
+    setEditingService(service);
+    setServiceForm({
+      title: service.title,
+      description: service.description,
+      features: service.features.join('\n'),
+      color: service.color,
+      iconName: iconOptions.find(icon => icon.component === service.icon)?.name || 'Settings'
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleDeleteService = (id: number) => {
+    setServices(prev => prev.filter(service => service.id !== id));
+    toast({
+      title: "Service Deleted",
+      description: "The service has been successfully removed.",
+    });
+  };
+
+  const handleSaveService = () => {
+    if (!serviceForm.title.trim() || !serviceForm.description.trim()) {
+      toast({
+        title: "Error",
+        description: "Title and description are required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const selectedIcon = iconOptions.find(icon => icon.name === serviceForm.iconName)?.component || Settings;
+    
+    const serviceData = {
+      title: serviceForm.title.trim(),
+      description: serviceForm.description.trim(),
+      features: serviceForm.features.split('\n').map(f => f.trim()).filter(f => f),
+      color: serviceForm.color,
+      icon: selectedIcon
+    };
+
+    if (editingService) {
+      setServices(prev => prev.map(service => 
+        service.id === editingService.id 
+          ? { ...service, ...serviceData }
+          : service
+      ));
+      toast({
+        title: "Service Updated",
+        description: "The service has been successfully updated.",
+      });
+    } else {
+      const newService = {
+        ...serviceData,
+        id: Math.max(...services.map(s => s.id)) + 1
+      };
+      setServices(prev => [...prev, newService]);
+      toast({
+        title: "Service Added",
+        description: "The new service has been successfully added.",
+      });
+    }
+
+    setIsEditModalOpen(false);
+    setIsAddModalOpen(false);
+    setEditingService(null);
+    setServiceForm({
+      title: '',
+      description: '',
+      features: '',
+      color: 'blue',
+      iconName: 'Settings'
+    });
+  };
 
   const getColorClasses = (color: string) => {
     const colorMap: Record<string, string> = {
@@ -210,15 +329,35 @@ const Services = () => {
               const IconComponent = service.icon;
               return (
                 <Card 
-                  key={index}
+                  key={service.id}
                   className={`group hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-0 bg-white/90 backdrop-blur-sm transform ${
                     isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
                   }`}
                   style={{ transitionDelay: `${index * 100}ms` }}
                 >
-                  <CardHeader>
-                    <div className={`inline-flex p-3 rounded-full bg-gradient-to-r ${getColorClasses(service.color)} text-white mb-4 w-fit group-hover:scale-110 transition-transform duration-300`}>
-                      <IconComponent className="h-8 w-8" />
+                  <CardHeader className="relative">
+                    <div className="flex items-center justify-between">
+                      <div className={`inline-flex p-3 rounded-full bg-gradient-to-r ${getColorClasses(service.color)} text-white mb-4 w-fit group-hover:scale-110 transition-transform duration-300`}>
+                        <IconComponent className="h-8 w-8" />
+                      </div>
+                      <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEditService(service)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDeleteService(service.id)}
+                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </div>
                     <CardTitle className="text-xl text-gray-900 group-hover:text-gray-700 transition-colors">
                       {service.title}
@@ -245,6 +384,17 @@ const Services = () => {
                 </Card>
               );
             })}
+          </div>
+
+          {/* Add New Service Button */}
+          <div className="text-center mb-8">
+            <Button
+              onClick={() => setIsAddModalOpen(true)}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
+              <Plus className="mr-2 h-5 w-5" />
+              Add New Service
+            </Button>
           </div>
 
           {/* Call to Action */}
@@ -277,6 +427,99 @@ const Services = () => {
           </div>
         </div>
       </div>
+
+      {/* Add/Edit Service Modal */}
+      <Dialog open={isEditModalOpen || isAddModalOpen} onOpenChange={(open) => {
+        if (!open) {
+          setIsEditModalOpen(false);
+          setIsAddModalOpen(false);
+          setEditingService(null);
+        }
+      }}>
+        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingService ? 'Edit Service' : 'Add New Service'}</DialogTitle>
+            <DialogDescription>
+              {editingService ? 'Update service details' : 'Add a new service to your offerings'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="service-title" className="text-right">Title</Label>
+              <Input
+                id="service-title"
+                value={serviceForm.title}
+                onChange={(e) => setServiceForm(prev => ({ ...prev, title: e.target.value }))}
+                className="col-span-3"
+                placeholder="Service title"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="service-description" className="text-right mt-2">Description</Label>
+              <Textarea
+                id="service-description"
+                value={serviceForm.description}
+                onChange={(e) => setServiceForm(prev => ({ ...prev, description: e.target.value }))}
+                className="col-span-3"
+                placeholder="Service description"
+                rows={3}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="service-features" className="text-right mt-2">Features</Label>
+              <Textarea
+                id="service-features"
+                value={serviceForm.features}
+                onChange={(e) => setServiceForm(prev => ({ ...prev, features: e.target.value }))}
+                className="col-span-3"
+                placeholder="One feature per line"
+                rows={4}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="service-icon" className="text-right">Icon</Label>
+              <Select value={serviceForm.iconName} onValueChange={(value) => setServiceForm(prev => ({ ...prev, iconName: value }))}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select icon" />
+                </SelectTrigger>
+                <SelectContent>
+                  {iconOptions.map((icon) => (
+                    <SelectItem key={icon.name} value={icon.name}>
+                      {icon.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="service-color" className="text-right">Color</Label>
+              <Select value={serviceForm.color} onValueChange={(value) => setServiceForm(prev => ({ ...prev, color: value }))}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select color" />
+                </SelectTrigger>
+                <SelectContent>
+                  {colorOptions.map((color) => (
+                    <SelectItem key={color} value={color}>
+                      {color.charAt(0).toUpperCase() + color.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setIsEditModalOpen(false);
+              setIsAddModalOpen(false);
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveService}>
+              {editingService ? 'Update Service' : 'Add Service'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
