@@ -47,31 +47,33 @@ const EditModeToggle = () => {
     });
   };
 
-  // Show Admin Login button when not authenticated
+  // Show Admin Login button when not authenticated - ALWAYS VISIBLE
   if (!isAuthenticated) {
     return (
       <>
         <Button
           onClick={() => setIsAuthDialogOpen(true)}
-          variant="outline"
-          size="sm"
-          className="fixed top-4 right-4 z-50 bg-white/90 backdrop-blur-sm hover:bg-white/80 border-gray-300 shadow-lg"
+          variant="default"
+          size="lg"
+          className="fixed top-6 right-6 z-[9999] bg-blue-600 hover:bg-blue-700 text-white shadow-2xl border-2 border-white/20 backdrop-blur-sm animate-pulse"
         >
-          <Shield className="h-4 w-4 mr-2" />
-          Admin Login
+          <Shield className="h-5 w-5 mr-2" />
+          🔐 Admin Login
         </Button>
 
         <Dialog open={isAuthDialogOpen} onOpenChange={setIsAuthDialogOpen}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Admin Authentication</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-xl font-bold text-center">Admin Authentication Required</DialogTitle>
+              <DialogDescription className="text-center">
                 Enter the admin password to access edit mode and modify content.
+                <br />
+                <span className="text-sm text-gray-500 mt-2 block">Default password: admin123</span>
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="password" className="text-right">
+                <Label htmlFor="password" className="text-right font-medium">
                   Password
                 </Label>
                 <Input
@@ -79,9 +81,10 @@ const EditModeToggle = () => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="col-span-3"
+                  className="col-span-3 border-2"
                   onKeyPress={(e) => e.key === 'Enter' && handleAuthenticate()}
                   placeholder="Enter admin password"
+                  autoFocus
                 />
               </div>
             </div>
@@ -89,8 +92,8 @@ const EditModeToggle = () => {
               <Button variant="outline" onClick={() => setIsAuthDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleAuthenticate}>
-                Login
+              <Button onClick={handleAuthenticate} className="bg-blue-600 hover:bg-blue-700">
+                🔓 Login
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -101,7 +104,7 @@ const EditModeToggle = () => {
 
   // Show Edit Mode controls when authenticated
   return (
-    <div className="fixed top-4 right-4 z-50 flex items-center space-x-3 bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border border-gray-200">
+    <div className="fixed top-6 right-6 z-[9999] flex items-center space-x-3 bg-white/95 backdrop-blur-sm rounded-lg px-4 py-3 shadow-2xl border-2 border-gray-200">
       <div className="flex items-center space-x-2">
         {isEditMode ? (
           <Unlock className="h-4 w-4 text-green-600" />
