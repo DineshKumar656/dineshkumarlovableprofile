@@ -14,8 +14,8 @@ export const useEditMode = () => {
   }, []);
 
   const authenticate = (password: string) => {
-    // Simple password protection - you can change this password
-    const ADMIN_PASSWORD = 'admin123'; // Change this to your preferred password
+    // Admin password - change this to your preferred password
+    const ADMIN_PASSWORD = 'admin123'; // ⚠️ CHANGE THIS PASSWORD!
     
     if (password === ADMIN_PASSWORD) {
       setIsAuthenticated(true);

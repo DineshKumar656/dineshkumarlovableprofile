@@ -32,7 +32,7 @@ const EditModeToggle = () => {
       });
     } else {
       toast({
-        title: "Authentication Failed",
+        title: "Authentication Failed", 
         description: "Incorrect password. Please try again.",
         variant: "destructive",
       });
@@ -47,6 +47,7 @@ const EditModeToggle = () => {
     });
   };
 
+  // Show Admin Login button when not authenticated
   if (!isAuthenticated) {
     return (
       <>
@@ -54,18 +55,18 @@ const EditModeToggle = () => {
           onClick={() => setIsAuthDialogOpen(true)}
           variant="outline"
           size="sm"
-          className="fixed top-4 right-4 z-50 bg-white/90 backdrop-blur-sm hover:bg-white/80 border-gray-300"
+          className="fixed top-4 right-4 z-50 bg-white/90 backdrop-blur-sm hover:bg-white/80 border-gray-300 shadow-lg"
         >
           <Shield className="h-4 w-4 mr-2" />
           Admin Login
         </Button>
 
         <Dialog open={isAuthDialogOpen} onOpenChange={setIsAuthDialogOpen}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Admin Authentication</DialogTitle>
               <DialogDescription>
-                Enter the admin password to access edit mode.
+                Enter the admin password to access edit mode and modify content.
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
@@ -80,6 +81,7 @@ const EditModeToggle = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   className="col-span-3"
                   onKeyPress={(e) => e.key === 'Enter' && handleAuthenticate()}
+                  placeholder="Enter admin password"
                 />
               </div>
             </div>
@@ -97,6 +99,7 @@ const EditModeToggle = () => {
     );
   }
 
+  // Show Edit Mode controls when authenticated
   return (
     <div className="fixed top-4 right-4 z-50 flex items-center space-x-3 bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border border-gray-200">
       <div className="flex items-center space-x-2">
