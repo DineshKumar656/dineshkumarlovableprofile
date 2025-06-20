@@ -5,15 +5,18 @@ import { useEditMode } from '@/hooks/useEditMode';
 interface EditModeContextType {
   isEditMode: boolean;
   isAuthenticated: boolean;
+  authenticate: (password: string) => boolean;
+  logout: () => void;
+  toggleEditMode: () => void;
 }
 
 const EditModeContext = createContext<EditModeContextType | undefined>(undefined);
 
 export const EditModeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isEditMode, isAuthenticated } = useEditMode();
+  const editModeHook = useEditMode();
 
   return (
-    <EditModeContext.Provider value={{ isEditMode, isAuthenticated }}>
+    <EditModeContext.Provider value={editModeHook}>
       {children}
     </EditModeContext.Provider>
   );

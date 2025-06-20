@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Download, ArrowRight, Github, Linkedin, Mail, Sparkles, Code, Zap, Upload, Edit } from "lucide-react";
@@ -17,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
-import { useEditMode } from "@/hooks/useEditMode";
+import { useEditModeContext } from "@/contexts/EditModeContext";
 import { useFileStorage } from "@/hooks/useFileStorage";
 
 const Index = () => {
@@ -31,7 +32,7 @@ const Index = () => {
   const [missionText, setMissionText] = useState("Final-year ECE student passionate about smart systems, real-time IoT monitoring, and AI-based analytics. My goal is to become a cross-domain professional, using modern technology to solve real-world challenges.");
   const [editingMission, setEditingMission] = useState("");
   const { toast } = useToast();
-  const { isEditMode } = useEditMode();
+  const { isEditMode } = useEditModeContext();
   const { saveFile: saveResume, getLatestFile: getLatestResume } = useFileStorage('portfolio_resume');
 
   useEffect(() => {
@@ -58,6 +59,7 @@ const Index = () => {
     if (file) {
       try {
         await saveResume(file);
+        setIsResumeDialogOpen(false);
         toast({
           title: "Resume Uploaded",
           description: "Your resume has been uploaded and saved successfully!",

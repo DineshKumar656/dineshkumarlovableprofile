@@ -13,11 +13,11 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Lock, Unlock, LogOut, Shield } from "lucide-react";
-import { useEditMode } from "@/hooks/useEditMode";
+import { useEditModeContext } from "@/contexts/EditModeContext";
 import { useToast } from "@/hooks/use-toast";
 
 const EditModeToggle = () => {
-  const { isEditMode, isAuthenticated, authenticate, logout, toggleEditMode } = useEditMode();
+  const { isEditMode, isAuthenticated, authenticate, logout, toggleEditMode } = useEditModeContext();
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const [password, setPassword] = useState('');
   const { toast } = useToast();
