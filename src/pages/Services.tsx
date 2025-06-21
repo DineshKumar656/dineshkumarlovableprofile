@@ -16,6 +16,8 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BarChart3, Cpu, Brain, Settings, Presentation, Database, Sparkles, Wrench, Lightbulb, Edit, Trash2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useEditModeContext } from "@/contexts/EditModeContext";
+import { usePersistentStorage } from "@/hooks/usePersistentStorage";
 
 interface Service {
   id: number;
@@ -33,6 +35,7 @@ const Services = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const { toast } = useToast();
+  const { isEditMode } = useEditModeContext();
 
   const iconOptions = [
     { name: 'BarChart3', component: BarChart3 },
@@ -59,7 +62,8 @@ const Services = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  const [services, setServices] = useState<Service[]>([
+  // Use persistent storage for services
+  const [services, setServices] = usePersistentStorage<Service[]>('portfolio_services', [
     {
       id: 1,
       icon: BarChart3,
@@ -149,6 +153,15 @@ const Services = () => {
   });
 
   const handleEditService = (service: Service) => {
+    if (!isEditMode) {
+      toast({
+        title: "Edit Mode Disabled",
+        description: "Please enable edit mode to modify content.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setEditingService(service);
     setServiceForm({
       title: service.title,
@@ -161,6 +174,15 @@ const Services = () => {
   };
 
   const handleDeleteService = (id: number) => {
+    if (!isEditMode) {
+      toast({
+        title: "Edit Mode Disabled",
+        description: "Please enable edit mode to modify content.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setServices(prev => prev.filter(service => service.id !== id));
     toast({
       title: "Service Deleted",
@@ -345,24 +367,27 @@ const Services = () => {
                       <div className={`inline-flex p-3 rounded-full bg-gradient-to-r ${getColorClasses(service.color)} text-white mb-4 w-fit group-hover:scale-110 transition-transform duration-300`}>
                         <IconComponent className="h-8 w-8" />
                       </div>
-                      <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEditService(service)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDeleteService(service.id)}
-                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
+                      {/* Edit controls only show in edit mode */}
+                      {isEditMode && (
+                        <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditService(service)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteService(service.id)}
+                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
                     <CardTitle className="text-xl text-gray-900 group-hover:text-gray-700 transition-colors">
                       {service.title}
@@ -391,16 +416,18 @@ const Services = () => {
             })}
           </div>
 
-          {/* Add New Service Button */}
-          <div className="text-center mb-8">
-            <Button
-              onClick={() => setIsAddModalOpen(true)}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            >
-              <Plus className="mr-2 h-5 w-5" />
-              Add New Service
-            </Button>
-          </div>
+          {/* Add New Service Button - Only show in edit mode */}
+          {isEditMode && (
+            <div className="text-center mb-8">
+              <Button
+                onClick={() => setIsAddModalOpen(true)}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              >
+                <Plus className="mr-2 h-5 w-5" />
+                Add New Service
+              </Button>
+            </div>
+          )}
 
           {/* Call to Action */}
           <div className={`mt-16 text-center transform transition-all duration-1000 delay-1000 ${

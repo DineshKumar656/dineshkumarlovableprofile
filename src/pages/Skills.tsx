@@ -17,6 +17,8 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Code, Database, Cpu, Users, Sparkles, Brain, Layers, Rocket, Edit, Trash2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useEditModeContext } from "@/contexts/EditModeContext";
+import { usePersistentStorage } from "@/hooks/usePersistentStorage";
 
 interface Skill {
   name: string;
@@ -39,6 +41,7 @@ const Skills = () => {
   const [editForm, setEditForm] = useState({ name: "", level: 0 });
   const [addForm, setAddForm] = useState({ name: "", level: 0, category: "" });
   const { toast } = useToast();
+  const { isEditMode } = useEditModeContext();
 
   useEffect(() => {
     setIsVisible(true);
@@ -54,7 +57,8 @@ const Skills = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  const [skillCategories, setSkillCategories] = useState<Record<string, SkillCategory>>({
+  // Use persistent storage for skills
+  const [skillCategories, setSkillCategories] = usePersistentStorage<Record<string, SkillCategory>>('portfolio_skills', {
     programming: {
       title: "Programming Languages",
       icon: Code,
@@ -101,6 +105,15 @@ const Skills = () => {
   });
 
   const handleEditSkill = (categoryKey: string, skillIndex: number) => {
+    if (!isEditMode) {
+      toast({
+        title: "Edit Mode Disabled",
+        description: "Please enable edit mode to modify content.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const skill = skillCategories[categoryKey].skills[skillIndex];
     setEditingSkill({ categoryKey, skillIndex, skill });
     setEditForm({ name: skill.name, level: skill.level });
@@ -108,6 +121,15 @@ const Skills = () => {
   };
 
   const handleDeleteSkill = (categoryKey: string, skillIndex: number) => {
+    if (!isEditMode) {
+      toast({
+        title: "Edit Mode Disabled",
+        description: "Please enable edit mode to modify content.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const skill = skillCategories[categoryKey].skills[skillIndex];
     setSkillCategories(prev => ({
       ...prev,
@@ -217,7 +239,6 @@ const Skills = () => {
       
       {/* Enhanced animated background */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Floating particles */}
         <div className="absolute inset-0">
           {[...Array(18)].map((_, i) => (
             <div
@@ -232,8 +253,6 @@ const Skills = () => {
             />
           ))}
         </div>
-        
-        {/* Interactive gradient orbs */}
         <div 
           className="absolute w-96 h-96 bg-gradient-to-r from-white/20 to-pink-200/20 rounded-full blur-3xl animate-pulse transition-transform duration-1000 ease-out"
           style={{
@@ -278,7 +297,6 @@ const Skills = () => {
               </span>
               <span className="text-white"> & Expertise</span>
               
-              {/* Decorative underline */}
               <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-40 h-1 bg-gradient-to-r from-pink-300 to-purple-300 rounded-full"></div>
             </h1>
             
@@ -287,7 +305,6 @@ const Skills = () => {
                 A comprehensive toolkit spanning programming, IoT, AI, and interpersonal skills
               </p>
               
-              {/* Feature highlights */}
               <div className="flex flex-wrap justify-center gap-6 mb-8">
                 <div className="flex items-center space-x-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg">
                   <Layers className="h-5 w-5 text-white" />
@@ -328,16 +345,18 @@ const Skills = () => {
             })}
           </div>
 
-          {/* Add New Skill Button */}
-          <div className="text-center mb-8">
-            <Button
-              onClick={() => setIsAddModalOpen(true)}
-              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            >
-              <Plus className="mr-2 h-5 w-5" />
-              Add New Skill
-            </Button>
-          </div>
+          {/* Add New Skill Button - Only show in edit mode */}
+          {isEditMode && (
+            <div className="text-center mb-8">
+              <Button
+                onClick={() => setIsAddModalOpen(true)}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              >
+                <Plus className="mr-2 h-5 w-5" />
+                Add New Skill
+              </Button>
+            </div>
+          )}
 
           {/* Skills Display */}
           <Card className={`shadow-2xl border-0 bg-white/90 backdrop-blur-sm transform transition-all duration-1000 delay-500 hover:scale-105 ${
@@ -359,24 +378,27 @@ const Skills = () => {
                       <span className="font-medium text-gray-900">{skill.name}</span>
                       <div className="flex items-center space-x-2">
                         <Badge variant="secondary" className="bg-purple-100 text-purple-700">{skill.level}%</Badge>
-                        <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleEditSkill(activeCategory, index)}
-                            className="h-7 w-7 p-0"
-                          >
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleDeleteSkill(activeCategory, index)}
-                            className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
+                        {/* Edit controls only show in edit mode */}
+                        {isEditMode && (
+                          <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEditSkill(activeCategory, index)}
+                              className="h-7 w-7 p-0"
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleDeleteSkill(activeCategory, index)}
+                              className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">

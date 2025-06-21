@@ -47,7 +47,7 @@ const EditModeToggle = () => {
     });
   };
 
-  // Show Admin Login button when not authenticated - ALWAYS VISIBLE
+  // Show Admin Login button when not authenticated - BOTTOM LEFT CORNER
   if (!isAuthenticated) {
     return (
       <>
@@ -55,7 +55,7 @@ const EditModeToggle = () => {
           onClick={() => setIsAuthDialogOpen(true)}
           variant="default"
           size="lg"
-          className="fixed top-6 right-6 z-[9999] bg-blue-600 hover:bg-blue-700 text-white shadow-2xl border-2 border-white/20 backdrop-blur-sm animate-pulse"
+          className="fixed bottom-6 left-6 z-[9999] bg-blue-600 hover:bg-blue-700 text-white shadow-2xl border-2 border-white/20 backdrop-blur-sm animate-pulse"
         >
           <Shield className="h-5 w-5 mr-2" />
           🔐 Admin Login
@@ -102,9 +102,9 @@ const EditModeToggle = () => {
     );
   }
 
-  // Show Edit Mode controls when authenticated
+  // Show Edit Mode controls when authenticated - BOTTOM LEFT CORNER
   return (
-    <div className="fixed top-6 right-6 z-[9999] flex items-center space-x-3 bg-white/95 backdrop-blur-sm rounded-lg px-4 py-3 shadow-2xl border-2 border-gray-200">
+    <div className="fixed bottom-6 left-6 z-[9999] flex items-center space-x-3 bg-white/95 backdrop-blur-sm rounded-lg px-4 py-3 shadow-2xl border-2 border-gray-200">
       <div className="flex items-center space-x-2">
         {isEditMode ? (
           <Unlock className="h-4 w-4 text-green-600" />
