@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,11 +24,18 @@ interface Skill {
   level: number;
 }
 
-interface SkillCategory {
+interface SkillCategoryData {
   title: string;
-  icon: React.ComponentType<{ className?: string }>;
   skills: Skill[];
 }
+
+// Separate icon mapping that won't be serialized
+const categoryIcons = {
+  programming: Code,
+  tools: Database,
+  iot: Cpu,
+  soft: Users,
+};
 
 const Skills = () => {
   const [activeCategory, setActiveCategory] = useState("programming");
@@ -57,11 +63,10 @@ const Skills = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // Use persistent storage for skills
-  const [skillCategories, setSkillCategories] = usePersistentStorage<Record<string, SkillCategory>>('portfolio_skills', {
+  // Use persistent storage for skills data only (without icons)
+  const [skillCategoriesData, setSkillCategoriesData] = usePersistentStorage<Record<string, SkillCategoryData>>('portfolio_skills', {
     programming: {
       title: "Programming Languages",
-      icon: Code,
       skills: [
         { name: "Python", level: 90 },
         { name: "SQL", level: 85 },
@@ -71,7 +76,6 @@ const Skills = () => {
     },
     tools: {
       title: "Tools & Platforms",
-      icon: Database,
       skills: [
         { name: "Power BI", level: 88 },
         { name: "Tableau", level: 82 },
@@ -84,7 +88,6 @@ const Skills = () => {
     },
     iot: {
       title: "IoT/AI Frameworks",
-      icon: Cpu,
       skills: [
         { name: "ESP32", level: 87 },
         { name: "NodeMCU", level: 85 },
@@ -94,7 +97,6 @@ const Skills = () => {
     },
     soft: {
       title: "Soft Skills",
-      icon: Users,
       skills: [
         { name: "Team Management", level: 85 },
         { name: "Communication", level: 90 },
@@ -114,7 +116,7 @@ const Skills = () => {
       return;
     }
 
-    const skill = skillCategories[categoryKey].skills[skillIndex];
+    const skill = skillCategoriesData[categoryKey].skills[skillIndex];
     setEditingSkill({ categoryKey, skillIndex, skill });
     setEditForm({ name: skill.name, level: skill.level });
     setIsEditModalOpen(true);
@@ -130,8 +132,8 @@ const Skills = () => {
       return;
     }
 
-    const skill = skillCategories[categoryKey].skills[skillIndex];
-    setSkillCategories(prev => ({
+    const skill = skillCategoriesData[categoryKey].skills[skillIndex];
+    setSkillCategoriesData(prev => ({
       ...prev,
       [categoryKey]: {
         ...prev[categoryKey],
@@ -141,7 +143,7 @@ const Skills = () => {
     
     toast({
       title: "Skill Deleted",
-      description: `${skill.name} has been removed from ${skillCategories[categoryKey].title}.`,
+      description: `${skill.name} has been removed from ${skillCategoriesData[categoryKey].title}.`,
     });
   };
 
@@ -166,7 +168,7 @@ const Skills = () => {
       return;
     }
 
-    setSkillCategories(prev => ({
+    setSkillCategoriesData(prev => ({
       ...prev,
       [editingSkill.categoryKey]: {
         ...prev[editingSkill.categoryKey],
@@ -216,7 +218,7 @@ const Skills = () => {
       return;
     }
 
-    setSkillCategories(prev => ({
+    setSkillCategoriesData(prev => ({
       ...prev,
       [addForm.category]: {
         ...prev[addForm.category],
@@ -226,7 +228,7 @@ const Skills = () => {
 
     toast({
       title: "Skill Added",
-      description: `${addForm.name} has been added to ${skillCategories[addForm.category].title}.`,
+      description: `${addForm.name} has been added to ${skillCategoriesData[addForm.category].title}.`,
     });
 
     setIsAddModalOpen(false);
@@ -326,8 +328,8 @@ const Skills = () => {
           <div className={`flex flex-wrap justify-center gap-4 mb-8 transform transition-all duration-1000 delay-300 ${
             isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}>
-            {Object.entries(skillCategories).map(([key, category]) => {
-              const IconComponent = category.icon;
+            {Object.entries(skillCategoriesData).map(([key, category]) => {
+              const IconComponent = categoryIcons[key as keyof typeof categoryIcons];
               return (
                 <button
                   key={key}
@@ -364,15 +366,15 @@ const Skills = () => {
           }`}>
             <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg">
               <CardTitle className="flex items-center text-2xl">
-                {React.createElement(skillCategories[activeCategory].icon, {
+                {React.createElement(categoryIcons[activeCategory as keyof typeof categoryIcons], {
                   className: "mr-3 h-8 w-8"
                 })}
-                {skillCategories[activeCategory].title}
+                {skillCategoriesData[activeCategory].title}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-8">
               <div className="grid md:grid-cols-2 gap-6">
-                {skillCategories[activeCategory].skills.map((skill, index) => (
+                {skillCategoriesData[activeCategory].skills.map((skill, index) => (
                   <div key={`${skill.name}-${index}`} className="space-y-2 group">
                     <div className="flex justify-between items-center">
                       <span className="font-medium text-gray-900">{skill.name}</span>
@@ -537,7 +539,7 @@ const Skills = () => {
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(skillCategories).map(([key, category]) => (
+                  {Object.entries(skillCategoriesData).map(([key, category]) => (
                     <SelectItem key={key} value={key}>
                       {category.title}
                     </SelectItem>
