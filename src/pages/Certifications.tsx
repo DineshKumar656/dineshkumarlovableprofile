@@ -8,8 +8,11 @@ import CertificateViewer from "@/components/CertificateViewer";
 import CertificateUpload from "@/components/CertificateUpload";
 import CertificateEdit from "@/components/CertificateEdit";
 import { useToast } from "@/hooks/use-toast";
+import { useEditModeContext } from "@/contexts/EditModeContext";
+import { usePersistentStorage } from "@/hooks/usePersistentStorage";
 
 const Certifications = () => {
+  const { isEditMode, isAuthenticated } = useEditModeContext();
   const [isVisible, setIsVisible] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [selectedCertificate, setSelectedCertificate] = useState(null);
@@ -19,7 +22,7 @@ const Certifications = () => {
   const [editingCertificate, setEditingCertificate] = useState(null);
   const { toast } = useToast();
   
-  const [certifications, setCertifications] = useState([
+  const defaultCertifications = [
     {
       title: "Full Stack Development Certification",
       organization: "TechAcademy Pro",
@@ -83,7 +86,9 @@ const Certifications = () => {
       skills: ["Data Visualization", "Business Analytics", "Reporting"],
       status: "Completed"
     }
-  ]);
+  ];
+
+  const [certifications, setCertifications] = usePersistentStorage('portfolio_certifications', defaultCertifications);
 
   useEffect(() => {
     setIsVisible(true);
@@ -116,6 +121,15 @@ const Certifications = () => {
   };
 
   const handleEditCertificate = (cert: any, index: number) => {
+    if (!isEditMode || !isAuthenticated) {
+      toast({
+        title: "Access Denied",
+        description: "Please login as admin and enable edit mode to edit certificates.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setEditingCertificate({ ...cert, index });
     setIsEditOpen(true);
   };
@@ -128,10 +142,23 @@ const Certifications = () => {
         newCerts[index] = updatedCertificate;
         return newCerts;
       });
+      toast({
+        title: "Certificate updated",
+        description: "The certificate has been updated successfully"
+      });
     }
   };
 
   const handleDeleteCertificate = (index: number) => {
+    if (!isEditMode || !isAuthenticated) {
+      toast({
+        title: "Access Denied",
+        description: "Please login as admin and enable edit mode to delete certificates.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setCertifications(prev => prev.filter((_, i) => i !== index));
     toast({
       title: "Certificate deleted",
@@ -141,6 +168,23 @@ const Certifications = () => {
 
   const handleUploadCertificate = (newCertificate: any) => {
     setCertifications(prev => [newCertificate, ...prev]);
+    toast({
+      title: "Certificate added",
+      description: "The new certificate has been added successfully"
+    });
+  };
+
+  const handleAddCertificate = () => {
+    if (!isEditMode || !isAuthenticated) {
+      toast({
+        title: "Access Denied",
+        description: "Please login as admin and enable edit mode to add certificates.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsUploadOpen(true);
   };
 
   return (
@@ -236,15 +280,17 @@ const Certifications = () => {
                 </div>
               </div>
 
-              {/* Upload Certificate Button */}
-              <Button 
-                onClick={() => setIsUploadOpen(true)}
-                size="lg"
-                className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border border-white/30 shadow-lg hover:scale-105 transition-all duration-300"
-              >
-                <Plus className="h-5 w-5 mr-2" />
-                Add New Certificate
-              </Button>
+              {/* Upload Certificate Button - Only show in edit mode */}
+              {isEditMode && isAuthenticated && (
+                <Button 
+                  onClick={handleAddCertificate}
+                  size="lg"
+                  className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border border-white/30 shadow-lg hover:scale-105 transition-all duration-300"
+                >
+                  <Plus className="h-5 w-5 mr-2" />
+                  Add New Certificate
+                </Button>
+              )}
             </div>
           </div>
 
@@ -342,24 +388,28 @@ const Certifications = () => {
                         <Eye className="mr-1 h-4 w-4" />
                         View
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditCertificate(cert, index)}
-                        className="flex items-center hover:scale-105 transform duration-200"
-                      >
-                        <Edit className="mr-1 h-4 w-4" />
-                        Edit
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteCertificate(index)}
-                        className="flex items-center hover:scale-105 transform duration-200 text-red-600 hover:text-red-800 border-red-300 hover:border-red-500"
-                      >
-                        <Trash2 className="mr-1 h-4 w-4" />
-                        Delete
-                      </Button>
+                      {isEditMode && isAuthenticated && (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditCertificate(cert, index)}
+                            className="flex items-center hover:scale-105 transform duration-200"
+                          >
+                            <Edit className="mr-1 h-4 w-4" />
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteCertificate(index)}
+                            className="flex items-center hover:scale-105 transform duration-200 text-red-600 hover:text-red-800 border-red-300 hover:border-red-500"
+                          >
+                            <Trash2 className="mr-1 h-4 w-4" />
+                            Delete
+                          </Button>
+                        </>
+                      )}
                       <button className="flex items-center text-indigo-600 hover:text-indigo-800 transition-colors text-sm hover:scale-105 transform duration-200">
                         <ExternalLink className="mr-1 h-4 w-4" />
                         Verify

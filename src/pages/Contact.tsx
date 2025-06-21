@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +15,8 @@ import {
 } from "@/components/ui/dialog";
 import { Mail, Linkedin, Github, MapPin, Send, Edit, Trash2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useEditModeContext } from "@/contexts/EditModeContext";
+import { usePersistentStorage } from "@/hooks/usePersistentStorage";
 import emailjs from '@emailjs/browser';
 
 interface ContactMethod {
@@ -28,6 +29,7 @@ interface ContactMethod {
 }
 
 const Contact = () => {
+  const { isEditMode, isAuthenticated } = useEditModeContext();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -56,7 +58,7 @@ const Contact = () => {
     { name: 'MapPin', component: MapPin },
   ];
 
-  const [contactMethods, setContactMethods] = useState<ContactMethod[]>([
+  const defaultContactMethods = [
     {
       id: 1,
       icon: Mail,
@@ -89,7 +91,9 @@ const Contact = () => {
       href: "#",
       color: "green"
     }
-  ]);
+  ];
+
+  const [contactMethods, setContactMethods] = usePersistentStorage<ContactMethod[]>('contact_methods', defaultContactMethods);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -137,6 +141,15 @@ const Contact = () => {
   };
 
   const handleEditContact = (contact: ContactMethod) => {
+    if (!isEditMode || !isAuthenticated) {
+      toast({
+        title: "Access Denied",
+        description: "Please login as admin and enable edit mode to modify contact methods.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setEditingContact(contact);
     setContactForm({
       title: contact.title,
@@ -149,11 +162,40 @@ const Contact = () => {
   };
 
   const handleDeleteContact = (id: number) => {
+    if (!isEditMode || !isAuthenticated) {
+      toast({
+        title: "Access Denied",
+        description: "Please login as admin and enable edit mode to delete contact methods.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setContactMethods(prev => prev.filter(contact => contact.id !== id));
     toast({
       title: "Contact Method Deleted",
       description: "The contact method has been successfully removed.",
     });
+  };
+
+  const handleAddContact = () => {
+    if (!isEditMode || !isAuthenticated) {
+      toast({
+        title: "Access Denied",
+        description: "Please login as admin and enable edit mode to add contact methods.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setContactForm({
+      title: '',
+      value: '',
+      href: '',
+      color: 'blue',
+      iconName: 'Mail'
+    });
+    setIsAddContactOpen(true);
   };
 
   const handleSaveContact = () => {
@@ -189,7 +231,7 @@ const Contact = () => {
     } else {
       const newContact = {
         ...contactData,
-        id: Math.max(...contactMethods.map(c => c.id)) + 1
+        id: Math.max(...contactMethods.map(c => c.id), 0) + 1
       };
       setContactMethods(prev => [...prev, newContact]);
       toast({
@@ -201,13 +243,6 @@ const Contact = () => {
     setIsEditContactOpen(false);
     setIsAddContactOpen(false);
     setEditingContact(null);
-    setContactForm({
-      title: '',
-      value: '',
-      href: '',
-      color: 'blue',
-      iconName: 'Mail'
-    });
   };
 
   return (
@@ -324,14 +359,16 @@ const Contact = () => {
                     <CardTitle className="text-2xl text-gray-900">
                       Get in Touch
                     </CardTitle>
-                    <Button
-                      onClick={() => setIsAddContactOpen(true)}
-                      size="sm"
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      <Plus className="mr-1 h-4 w-4" />
-                      Add Contact
-                    </Button>
+                    {isEditMode && isAuthenticated && (
+                      <Button
+                        onClick={handleAddContact}
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Plus className="mr-1 h-4 w-4" />
+                        Add Contact
+                      </Button>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -364,30 +401,32 @@ const Contact = () => {
                               <div className="text-gray-600">{method.value}</div>
                             </div>
                           </a>
-                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handleEditContact(method);
-                              }}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Edit className="h-3 w-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handleDeleteContact(method.id);
-                              }}
-                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
+                          {isEditMode && isAuthenticated && (
+                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handleEditContact(method);
+                                }}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handleDeleteContact(method.id);
+                                }}
+                                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       );
                     })}

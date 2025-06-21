@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Download, ArrowRight, Github, Linkedin, Mail, Sparkles, Code, Zap, Upload, Edit } from "lucide-react";
@@ -20,20 +19,20 @@ import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
 import { useEditModeContext } from "@/contexts/EditModeContext";
 import { useFileStorage } from "@/hooks/useFileStorage";
+import { usePersistentStorage } from "@/hooks/usePersistentStorage";
 
 const Index = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const [mousePosition, setMousePosition] = useState({
-    x: 0,
-    y: 0
-  });
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isResumeDialogOpen, setIsResumeDialogOpen] = useState(false);
   const [isMissionEditOpen, setIsMissionEditOpen] = useState(false);
-  const [missionText, setMissionText] = useState("Final-year ECE student passionate about smart systems, real-time IoT monitoring, and AI-based analytics. My goal is to become a cross-domain professional, using modern technology to solve real-world challenges.");
   const [editingMission, setEditingMission] = useState("");
   const { toast } = useToast();
-  const { isEditMode } = useEditModeContext();
+  const { isEditMode, isAuthenticated } = useEditModeContext();
   const { saveFile: saveResume, getLatestFile: getLatestResume } = useFileStorage('portfolio_resume');
+  
+  const defaultMission = "Final-year ECE student passionate about smart systems, real-time IoT monitoring, and AI-based analytics. My goal is to become a cross-domain professional, using modern technology to solve real-world challenges.";
+  const [missionText, setMissionText] = usePersistentStorage('portfolio_mission', defaultMission);
 
   useEffect(() => {
     setIsVisible(true);
@@ -44,13 +43,6 @@ const Index = () => {
       });
     };
     window.addEventListener('mousemove', handleMouseMove);
-    
-    // Load saved mission from localStorage
-    const savedMission = localStorage.getItem('portfolio_mission');
-    if (savedMission) {
-      setMissionText(savedMission);
-    }
-    
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
@@ -65,6 +57,7 @@ const Index = () => {
           description: "Your resume has been uploaded and saved successfully!",
         });
       } catch (error) {
+        console.error('Resume upload error:', error);
         toast({
           title: "Upload Failed",
           description: "Failed to upload resume. Please try again.",
@@ -89,7 +82,7 @@ const Index = () => {
         description: `Downloaded ${latestResume.name}`,
       });
     } else {
-      if (isEditMode) {
+      if (isEditMode && isAuthenticated) {
         setIsResumeDialogOpen(true);
       } else {
         toast({
@@ -103,7 +96,6 @@ const Index = () => {
 
   const handleSaveMission = () => {
     setMissionText(editingMission);
-    localStorage.setItem('portfolio_mission', editingMission);
     setIsMissionEditOpen(false);
     toast({
       title: "Mission Updated",
@@ -112,10 +104,10 @@ const Index = () => {
   };
 
   const handleEditMission = () => {
-    if (!isEditMode) {
+    if (!isEditMode || !isAuthenticated) {
       toast({
-        title: "Edit Mode Disabled",
-        description: "Please enable edit mode to modify content.",
+        title: "Access Denied",
+        description: "Please login as admin and enable edit mode to modify content.",
         variant: "destructive",
       });
       return;
@@ -201,7 +193,7 @@ const Index = () => {
               </div>
 
               <Card className="bg-white/10 backdrop-blur-lg border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 relative group">
-                {isEditMode && (
+                {isEditMode && isAuthenticated && (
                   <Button
                     size="sm"
                     variant="outline"
@@ -363,7 +355,7 @@ const Index = () => {
       </div>
 
       {/* Resume Upload Dialog - Only show in edit mode */}
-      {isEditMode && (
+      {isEditMode && isAuthenticated && (
         <Dialog open={isResumeDialogOpen} onOpenChange={setIsResumeDialogOpen}>
           <DialogContent>
             <DialogHeader>
@@ -394,7 +386,7 @@ const Index = () => {
       )}
 
       {/* Mission Edit Dialog - Only show in edit mode */}
-      {isEditMode && (
+      {isEditMode && isAuthenticated && (
         <Dialog open={isMissionEditOpen} onOpenChange={setIsMissionEditOpen}>
           <DialogContent>
             <DialogHeader>

@@ -20,10 +20,20 @@ export const usePersistentStorage = <T>(key: string, defaultValue: T) => {
       
       setValue(updatedValue);
       localStorage.setItem(key, JSON.stringify(updatedValue));
+      console.log(`Saved ${key} to localStorage:`, updatedValue);
     } catch (error) {
       console.error(`Error saving ${key} to localStorage:`, error);
     }
   };
+
+  // Also update localStorage whenever value changes externally
+  useEffect(() => {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      console.error(`Error syncing ${key} to localStorage:`, error);
+    }
+  }, [key, value]);
 
   return [value, updateValue] as const;
 };
