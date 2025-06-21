@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +16,8 @@ import {
 } from "@/components/ui/dialog";
 import { GraduationCap, Calendar, MapPin, Sparkles, Target, Heart, Zap, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useEditModeContext } from "@/contexts/EditModeContext";
+import { usePersistentStorage } from "@/hooks/usePersistentStorage";
 
 interface AboutContent {
   title: string;
@@ -36,8 +39,9 @@ const About = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingSection, setEditingSection] = useState<string>("");
   const { toast } = useToast();
+  const { isEditMode, isAuthenticated } = useEditModeContext();
 
-  const [aboutContent, setAboutContent] = useState<AboutContent>({
+  const defaultAboutContent: AboutContent = {
     title: "About Me",
     description: "Passionate about bridging the gap between hardware and software to create intelligent solutions",
     journeyText: [
@@ -63,7 +67,12 @@ const About = () => {
       "Mentor emerging engineers",
       "Create sustainable smart systems"
     ]
-  });
+  };
+
+  const [aboutContent, setAboutContent] = usePersistentStorage<AboutContent>(
+    'portfolio_about_content', 
+    defaultAboutContent
+  );
 
   const [editForm, setEditForm] = useState<any>({});
 
@@ -82,6 +91,15 @@ const About = () => {
   }, []);
 
   const handleEditSection = (section: string) => {
+    if (!isAuthenticated || !isEditMode) {
+      toast({
+        title: "Authentication Required",
+        description: "Please login as admin and enable edit mode to make changes.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setEditingSection(section);
     
     switch (section) {
@@ -111,38 +129,42 @@ const About = () => {
   };
 
   const handleSaveEdit = () => {
+    let updatedContent = { ...aboutContent };
+
     switch (editingSection) {
       case 'header':
-        setAboutContent(prev => ({
-          ...prev,
+        updatedContent = {
+          ...updatedContent,
           title: editForm.title,
           description: editForm.description
-        }));
+        };
         break;
       case 'journey':
-        setAboutContent(prev => ({
-          ...prev,
+        updatedContent = {
+          ...updatedContent,
           journeyText: editForm.journeyText.split('\n\n').filter((text: string) => text.trim())
-        }));
+        };
         break;
       case 'education':
-        setAboutContent(prev => ({
-          ...prev,
+        updatedContent = {
+          ...updatedContent,
           education: editForm
-        }));
+        };
         break;
       case 'goals':
-        setAboutContent(prev => ({
-          ...prev,
+        updatedContent = {
+          ...updatedContent,
           shortTermGoals: editForm.shortTermGoals.split('\n').filter((goal: string) => goal.trim()),
           longTermGoals: editForm.longTermGoals.split('\n').filter((goal: string) => goal.trim())
-        }));
+        };
         break;
     }
 
+    setAboutContent(updatedContent);
+
     toast({
       title: "Content Updated",
-      description: "Your about section has been successfully updated.",
+      description: "Your about section has been successfully saved.",
     });
 
     setIsEditModalOpen(false);
@@ -205,14 +227,16 @@ const About = () => {
           <div className={`text-center mb-16 transform transition-all duration-1000 relative group ${
             isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
           }`}>
-            <Button
-              onClick={() => handleEditSection('header')}
-              size="sm"
-              variant="outline"
-              className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
+            {isAuthenticated && isEditMode && (
+              <Button
+                onClick={() => handleEditSection('header')}
+                size="sm"
+                variant="outline"
+                className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+            )}
             
             <div className="flex justify-center items-center space-x-3 mb-6">
               <Heart className="h-8 w-8 text-white animate-pulse" />
@@ -259,14 +283,16 @@ const About = () => {
               isVisible ? 'translate-x-0 opacity-100' : '-translate-x-12 opacity-0'
             }`}>
               <CardHeader className="relative">
-                <Button
-                  onClick={() => handleEditSection('education')}
-                  size="sm"
-                  variant="outline"
-                  className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
+                {isAuthenticated && isEditMode && (
+                  <Button
+                    onClick={() => handleEditSection('education')}
+                    size="sm"
+                    variant="outline"
+                    className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                )}
                 <CardTitle className="flex items-center text-2xl text-gray-900">
                   <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mr-4">
                     <GraduationCap className="h-8 w-8 text-white" />
@@ -298,14 +324,16 @@ const About = () => {
               isVisible ? 'translate-x-0 opacity-100' : 'translate-x-12 opacity-0'
             }`}>
               <CardHeader className="relative">
-                <Button
-                  onClick={() => handleEditSection('journey')}
-                  size="sm"
-                  variant="outline"
-                  className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
+                {isAuthenticated && isEditMode && (
+                  <Button
+                    onClick={() => handleEditSection('journey')}
+                    size="sm"
+                    variant="outline"
+                    className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                )}
                 <CardTitle className="text-2xl text-gray-900 flex items-center">
                   <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg mr-3">
                     <Heart className="h-6 w-6 text-white" />
@@ -327,14 +355,16 @@ const About = () => {
               isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
             }`}>
               <CardHeader className="relative">
-                <Button
-                  onClick={() => handleEditSection('goals')}
-                  size="sm"
-                  variant="outline"
-                  className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
+                {isAuthenticated && isEditMode && (
+                  <Button
+                    onClick={() => handleEditSection('goals')}
+                    size="sm"
+                    variant="outline"
+                    className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                )}
                 <CardTitle className="text-2xl text-gray-900 flex items-center">
                   <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg mr-3">
                     <Target className="h-6 w-6 text-white" />
