@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,8 +15,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { ExternalLink, Github, Droplets, Sprout, TrafficCone, Truck, Bot, Sparkles, Zap, Code2, Edit, Trash2, Plus, Upload } from "lucide-react";
+import { ExternalLink, Github, Droplets, Sprout, TrafficCone, Truck, Bot, Sparkles, Zap, Code2, Edit, Trash2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useEditModeContext } from "@/contexts/EditModeContext";
+import { useProjectStorage, Project } from "@/hooks/useProjectStorage";
 
 interface Project {
   id: number;
@@ -40,6 +41,8 @@ const Projects = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const { toast } = useToast();
+  const { isEditMode, isAuthenticated } = useEditModeContext();
+  const { projects, addProject, updateProject, deleteProject } = useProjectStorage();
 
   const iconOptions = [
     { name: 'Sprout', component: Sprout },
@@ -50,74 +53,6 @@ const Projects = () => {
     { name: 'Code2', component: Code2 },
     { name: 'Zap', component: Zap }
   ];
-
-  const [projects, setProjects] = useState<Project[]>([
-    {
-      id: 1,
-      title: "Smart Irrigation System Using AI",
-      icon: Sprout,
-      description: "AI-powered irrigation system with Firebase integration and Telegram notifications for optimal crop watering.",
-      longDescription: "Developed an intelligent irrigation system that uses AI algorithms to analyze soil moisture, weather data, and crop requirements. The system automatically controls water distribution and sends real-time updates via Telegram bot. Firebase backend ensures reliable data storage and synchronization.",
-      briefDescription: "AI-powered smart irrigation with automated watering control",
-      tech: ["Python", "AI/ML", "Firebase", "Telegram API", "IoT Sensors"],
-      image: "/api/placeholder/400/250",
-      demoUrl: "#",
-      githubUrl: "#",
-      featured: true
-    },
-    {
-      id: 2,
-      title: "IoT Water Level Indicator",
-      icon: Droplets,
-      description: "Smart water level monitoring system with OLED display and Blynk cloud integration for remote monitoring.",
-      longDescription: "Created a comprehensive water level monitoring solution using ultrasonic sensors, OLED displays, and cloud connectivity. Users can monitor water levels remotely through the Blynk mobile app and receive alerts when levels are critically low or high.",
-      briefDescription: "Real-time water level monitoring with mobile alerts",
-      tech: ["ESP32", "Blynk", "OLED", "Ultrasonic Sensors", "IoT"],
-      image: "/api/placeholder/400/250",
-      demoUrl: "#",
-      githubUrl: "#",
-      featured: false
-    },
-    {
-      id: 3,
-      title: "Smart Traffic Light System",
-      icon: TrafficCone,
-      description: "Intelligent traffic management system using Wokwi simulation and ThingSpeak for traffic flow optimization.",
-      longDescription: "Designed and simulated a smart traffic light system that adapts to real-time traffic conditions. The system uses sensors to detect vehicle density and adjusts light timing accordingly, reducing wait times and improving traffic flow efficiency.",
-      briefDescription: "Adaptive traffic control system for improved flow",
-      tech: ["Wokwi", "ThingSpeak", "Arduino", "Traffic Simulation", "IoT"],
-      image: "/api/placeholder/400/250",
-      demoUrl: "#",
-      githubUrl: "#",
-      featured: false
-    },
-    {
-      id: 4,
-      title: "Heavy Vehicle Monitoring",
-      icon: Truck,
-      description: "Real-time heavy vehicle tracking and monitoring system with ESP32, Blynk integration, and alert mechanisms.",
-      longDescription: "Developed a comprehensive monitoring system for heavy vehicles including GPS tracking, speed monitoring, and maintenance alerts. The system provides real-time dashboards for fleet managers and automatic notifications for unusual activities.",
-      briefDescription: "GPS-based fleet tracking with maintenance alerts",
-      tech: ["ESP32", "Blynk", "GPS", "Sensors", "Fleet Management"],
-      image: "/api/placeholder/400/250",
-      demoUrl: "#",
-      githubUrl: "#",
-      featured: false
-    },
-    {
-      id: 5,
-      title: "AI Conversation Bot",
-      icon: Bot,
-      description: "Intelligent chatbot built with Python featuring natural language processing and context-aware responses.",
-      longDescription: "Created an advanced conversational AI bot using Python and natural language processing libraries. The bot can understand context, maintain conversation flow, and provide intelligent responses across various topics.",
-      briefDescription: "Context-aware chatbot with NLP capabilities",
-      tech: ["Python", "NLP", "Machine Learning", "Chatbot", "AI"],
-      image: "/api/placeholder/400/250",
-      demoUrl: "#",
-      githubUrl: "#",
-      featured: false
-    }
-  ]);
 
   const [projectForm, setProjectForm] = useState({
     title: '',
@@ -156,6 +91,15 @@ const Projects = () => {
   };
 
   const handleEditProject = (project: Project) => {
+    if (!isEditMode || !isAuthenticated) {
+      toast({
+        title: "Access Denied",
+        description: "Please login as admin and enable edit mode to modify projects.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setEditingProject(project);
     setProjectForm({
       title: project.title,
@@ -166,7 +110,7 @@ const Projects = () => {
       demoUrl: project.demoUrl,
       githubUrl: project.githubUrl,
       featured: project.featured,
-      iconName: iconOptions.find(icon => icon.component === project.icon)?.name || 'Code2',
+      iconName: project.iconName,
       image: project.image || '',
       video: project.video || ''
     });
@@ -174,11 +118,32 @@ const Projects = () => {
   };
 
   const handleDeleteProject = (id: number) => {
-    setProjects(prev => prev.filter(project => project.id !== id));
+    if (!isEditMode || !isAuthenticated) {
+      toast({
+        title: "Access Denied",
+        description: "Please login as admin and enable edit mode to delete projects.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    deleteProject(id);
     toast({
       title: "Project Deleted",
       description: "The project has been successfully removed.",
     });
+  };
+
+  const handleAddProject = () => {
+    if (!isEditMode || !isAuthenticated) {
+      toast({
+        title: "Access Denied",
+        description: "Please login as admin and enable edit mode to add projects.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsAddModalOpen(true);
   };
 
   const handleSaveProject = () => {
@@ -190,8 +155,6 @@ const Projects = () => {
       });
       return;
     }
-
-    const selectedIcon = iconOptions.find(icon => icon.name === projectForm.iconName)?.component || Code2;
     
     const projectData = {
       title: projectForm.title.trim(),
@@ -202,27 +165,19 @@ const Projects = () => {
       demoUrl: projectForm.demoUrl.trim(),
       githubUrl: projectForm.githubUrl.trim(),
       featured: projectForm.featured,
-      icon: selectedIcon,
+      iconName: projectForm.iconName,
       image: projectForm.image || "/api/placeholder/400/250",
       video: projectForm.video
     };
 
     if (editingProject) {
-      setProjects(prev => prev.map(project => 
-        project.id === editingProject.id 
-          ? { ...project, ...projectData }
-          : project
-      ));
+      updateProject(editingProject.id, projectData);
       toast({
         title: "Project Updated",
         description: "The project has been successfully updated.",
       });
     } else {
-      const newProject = {
-        ...projectData,
-        id: Math.max(...projects.map(p => p.id)) + 1
-      };
-      setProjects(prev => [...prev, newProject]);
+      addProject(projectData);
       toast({
         title: "Project Added",
         description: "The new project has been successfully added.",
@@ -245,6 +200,11 @@ const Projects = () => {
       image: '',
       video: ''
     });
+  };
+
+  const getIconComponent = (iconName: string) => {
+    const iconOption = iconOptions.find(icon => icon.name === iconName);
+    return iconOption ? iconOption.component : Code2;
   };
 
   return (
@@ -303,19 +263,21 @@ const Projects = () => {
             </div>
           </div>
 
-          <div className="text-center mb-8">
-            <Button
-              onClick={() => setIsAddModalOpen(true)}
-              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            >
-              <Plus className="mr-2 h-5 w-5" />
-              Add New Project
-            </Button>
-          </div>
+          {isEditMode && isAuthenticated && (
+            <div className="text-center mb-8">
+              <Button
+                onClick={handleAddProject}
+                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              >
+                <Plus className="mr-2 h-5 w-5" />
+                Add New Project
+              </Button>
+            </div>
+          )}
 
           <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-8">
             {projects.map((project) => {
-              const IconComponent = project.icon;
+              const IconComponent = getIconComponent(project.iconName);
               return (
                 <Card 
                   key={project.id} 
@@ -335,30 +297,32 @@ const Projects = () => {
                             ⭐ Featured
                           </Badge>
                         )}
-                        <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditProject(project);
-                            }}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteProject(project.id);
-                            }}
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
+                        {isEditMode && isAuthenticated && (
+                          <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditProject(project);
+                              }}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteProject(project.id);
+                              }}
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <CardTitle className="text-xl text-gray-900 group-hover:text-green-600 transition-colors duration-300">
@@ -419,7 +383,7 @@ const Projects = () => {
                   <div className="flex justify-between items-start">
                     <CardTitle className="text-2xl text-gray-900 flex items-center space-x-3">
                       <div className="p-2 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg">
-                        {React.createElement(selectedProject.icon, {
+                        {React.createElement(getIconComponent(selectedProject.iconName), {
                           className: "h-6 w-6 text-green-600"
                         })}
                       </div>
@@ -441,7 +405,7 @@ const Projects = () => {
                       {selectedProject.image && selectedProject.image !== "/api/placeholder/400/250" ? (
                         <img src={selectedProject.image} alt={selectedProject.title} className="w-full h-full object-cover rounded-xl" />
                       ) : (
-                        React.createElement(selectedProject.icon, {
+                        React.createElement(getIconComponent(selectedProject.iconName), {
                           className: "h-20 w-20 text-green-500"
                         })
                       )}

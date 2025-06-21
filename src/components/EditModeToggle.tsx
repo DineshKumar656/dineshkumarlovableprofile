@@ -67,8 +67,6 @@ const EditModeToggle = () => {
               <DialogTitle className="text-xl font-bold text-center">Admin Authentication Required</DialogTitle>
               <DialogDescription className="text-center">
                 Enter the admin password to access edit mode and modify content.
-                <br />
-                <span className="text-sm text-gray-500 mt-2 block">Default password: admin123</span>
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">

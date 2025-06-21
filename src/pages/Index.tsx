@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Download, ArrowRight, Github, Linkedin, Mail, Sparkles, Code, Zap, Upload, Edit } from "lucide-react";
+import { Download, ArrowRight, Github, Linkedin, Mail, Sparkles, Code, Zap, Upload, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -29,7 +29,7 @@ const Index = () => {
   const [editingMission, setEditingMission] = useState("");
   const { toast } = useToast();
   const { isEditMode, isAuthenticated } = useEditModeContext();
-  const { saveFile: saveResume, getLatestFile: getLatestResume } = useFileStorage('portfolio_resume');
+  const { saveFile: saveResume, getLatestFile: getLatestResume, deleteFile: deleteResume, files: resumeFiles } = useFileStorage('portfolio_resume');
   
   const defaultMission = "Final-year ECE student passionate about smart systems, real-time IoT monitoring, and AI-based analytics. My goal is to become a cross-domain professional, using modern technology to solve real-world challenges.";
   const [missionText, setMissionText] = usePersistentStorage('portfolio_mission', defaultMission);
@@ -64,6 +64,26 @@ const Index = () => {
           variant: "destructive",
         });
       }
+    }
+  };
+
+  const handleRemoveResume = () => {
+    if (!isEditMode || !isAuthenticated) {
+      toast({
+        title: "Access Denied",
+        description: "Please login as admin and enable edit mode to remove resume.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const latestResume = getLatestResume();
+    if (latestResume) {
+      deleteResume(latestResume.name);
+      toast({
+        title: "Resume Removed",
+        description: "Your resume has been successfully removed.",
+      });
     }
   };
 
@@ -217,13 +237,25 @@ const Index = () => {
               </Card>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
-                  onClick={handleDownloadResume}
-                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                >
-                  <Download className="mr-2 h-5 w-5" />
-                  {latestResume ? 'Download Resume' : 'No Resume Available'}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    onClick={handleDownloadResume}
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  >
+                    <Download className="mr-2 h-5 w-5" />
+                    {latestResume ? 'Download Resume' : 'No Resume Available'}
+                  </Button>
+                  {isEditMode && isAuthenticated && latestResume && (
+                    <Button
+                      onClick={handleRemoveResume}
+                      variant="outline"
+                      size="sm"
+                      className="border-red-300 text-red-200 hover:bg-red-900/20 px-3 py-4"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
                 <Link to="/projects">
                   <Button variant="outline" className="border-2 border-white/30 text-white hover:bg-white/10 px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                     View Projects
