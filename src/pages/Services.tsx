@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,13 +20,17 @@ import { useToast } from "@/hooks/use-toast";
 import { useEditModeContext } from "@/contexts/EditModeContext";
 import { usePersistentStorage } from "@/hooks/usePersistentStorage";
 
-interface Service {
+interface ServiceData {
   id: number;
-  icon: any;
+  iconName: string; // Store icon name instead of component
   title: string;
   description: string;
   features: string[];
   color: string;
+}
+
+interface Service extends ServiceData {
+  icon: any; // For backwards compatibility with existing code
 }
 
 const Services = () => {
@@ -46,6 +51,10 @@ const Services = () => {
     { name: 'Database', component: Database }
   ];
 
+  const getIconComponent = (iconName: string) => {
+    return iconOptions.find(icon => icon.name === iconName)?.component || Settings;
+  };
+
   const colorOptions = ['blue', 'green', 'purple', 'orange', 'pink', 'indigo'];
 
   useEffect(() => {
@@ -62,11 +71,11 @@ const Services = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // Use persistent storage for services
-  const [services, setServices] = usePersistentStorage<Service[]>('portfolio_services', [
+  // Use persistent storage for service data (without component references)
+  const [serviceData, setServiceData] = usePersistentStorage<ServiceData[]>('portfolio_services', [
     {
       id: 1,
-      icon: BarChart3,
+      iconName: 'BarChart3',
       title: "Data Visualization with BI Tools",
       description: "Transform raw data into compelling visual stories using Power BI, Tableau, and advanced Excel features.",
       features: [
@@ -79,7 +88,7 @@ const Services = () => {
     },
     {
       id: 2,
-      icon: Cpu,
+      iconName: 'Cpu',
       title: "IoT & Sensor-Based Development",
       description: "Design and develop intelligent IoT solutions with real-time monitoring and cloud integration.",
       features: [
@@ -92,7 +101,7 @@ const Services = () => {
     },
     {
       id: 3,
-      icon: Brain,
+      iconName: 'Brain',
       title: "AI Integration for Smart Systems",
       description: "Implement AI and machine learning algorithms to create intelligent decision-making systems.",
       features: [
@@ -105,7 +114,7 @@ const Services = () => {
     },
     {
       id: 4,
-      icon: Settings,
+      iconName: 'Settings',
       title: "Tech-Enabled Automation",
       description: "Build automated systems that streamline processes and improve operational efficiency.",
       features: [
@@ -118,7 +127,7 @@ const Services = () => {
     },
     {
       id: 5,
-      icon: Presentation,
+      iconName: 'Presentation',
       title: "AI-Enhanced Presentations",
       description: "Create impactful presentations and reports enhanced with AI-generated insights and visuals.",
       features: [
@@ -131,7 +140,7 @@ const Services = () => {
     },
     {
       id: 6,
-      icon: Database,
+      iconName: 'Database',
       title: "Database Design & Analytics",
       description: "Design efficient databases and implement analytics solutions for data-driven decision making.",
       features: [
@@ -143,6 +152,12 @@ const Services = () => {
       color: "indigo"
     }
   ]);
+
+  // Convert service data to services with icon components
+  const services: Service[] = serviceData.map(data => ({
+    ...data,
+    icon: getIconComponent(data.iconName)
+  }));
 
   const [serviceForm, setServiceForm] = useState({
     title: '',
@@ -168,7 +183,7 @@ const Services = () => {
       description: service.description,
       features: service.features.join('\n'),
       color: service.color,
-      iconName: iconOptions.find(icon => icon.component === service.icon)?.name || 'Settings'
+      iconName: service.iconName
     });
     setIsEditModalOpen(true);
   };
@@ -183,7 +198,7 @@ const Services = () => {
       return;
     }
 
-    setServices(prev => prev.filter(service => service.id !== id));
+    setServiceData(prev => prev.filter(service => service.id !== id));
     toast({
       title: "Service Deleted",
       description: "The service has been successfully removed.",
@@ -199,21 +214,20 @@ const Services = () => {
       });
       return;
     }
-
-    const selectedIcon = iconOptions.find(icon => icon.name === serviceForm.iconName)?.component || Settings;
     
-    const serviceData = {
+    const newServiceData: ServiceData = {
       title: serviceForm.title.trim(),
       description: serviceForm.description.trim(),
       features: serviceForm.features.split('\n').map(f => f.trim()).filter(f => f),
       color: serviceForm.color,
-      icon: selectedIcon
+      iconName: serviceForm.iconName,
+      id: editingService ? editingService.id : Math.max(...serviceData.map(s => s.id)) + 1
     };
 
     if (editingService) {
-      setServices(prev => prev.map(service => 
+      setServiceData(prev => prev.map(service => 
         service.id === editingService.id 
-          ? { ...service, ...serviceData }
+          ? newServiceData
           : service
       ));
       toast({
@@ -221,11 +235,7 @@ const Services = () => {
         description: "The service has been successfully updated.",
       });
     } else {
-      const newService = {
-        ...serviceData,
-        id: Math.max(...services.map(s => s.id)) + 1
-      };
-      setServices(prev => [...prev, newService]);
+      setServiceData(prev => [...prev, newServiceData]);
       toast({
         title: "Service Added",
         description: "The new service has been successfully added.",
