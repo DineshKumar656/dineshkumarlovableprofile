@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,21 +20,6 @@ import { ExternalLink, Github, Droplets, Sprout, TrafficCone, Truck, Bot, Sparkl
 import { useToast } from "@/hooks/use-toast";
 import { useEditModeContext } from "@/contexts/EditModeContext";
 import { useProjectStorage, Project } from "@/hooks/useProjectStorage";
-
-interface Project {
-  id: number;
-  title: string;
-  icon: any;
-  description: string;
-  longDescription: string;
-  briefDescription: string;
-  tech: string[];
-  image: string;
-  video?: string;
-  demoUrl: string;
-  githubUrl: string;
-  featured: boolean;
-}
 
 const Projects = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
