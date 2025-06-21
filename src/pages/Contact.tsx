@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,13 +20,17 @@ import { useEditModeContext } from "@/contexts/EditModeContext";
 import { usePersistentStorage } from "@/hooks/usePersistentStorage";
 import emailjs from '@emailjs/browser';
 
-interface ContactMethod {
+interface ContactMethodData {
   id: number;
-  icon: any;
+  iconName: string;
   title: string;
   value: string;
   href: string;
   color: string;
+}
+
+interface ContactMethod extends ContactMethodData {
+  icon: any;
 }
 
 const Contact = () => {
@@ -58,10 +63,15 @@ const Contact = () => {
     { name: 'MapPin', component: MapPin },
   ];
 
-  const defaultContactMethods = [
+  const getIconComponent = (iconName: string) => {
+    const iconOption = iconOptions.find(option => option.name === iconName);
+    return iconOption ? iconOption.component : Mail;
+  };
+
+  const defaultContactMethodsData: ContactMethodData[] = [
     {
       id: 1,
-      icon: Mail,
+      iconName: 'Mail',
       title: "Email",
       value: "dineshkumar22106007@gmail.com",
       href: "mailto:dineshkumar22106007@gmail.com",
@@ -69,7 +79,7 @@ const Contact = () => {
     },
     {
       id: 2,
-      icon: Linkedin,
+      iconName: 'Linkedin',
       title: "LinkedIn",
       value: "Connect with me",
       href: "https://linkedin.com",
@@ -77,7 +87,7 @@ const Contact = () => {
     },
     {
       id: 3,
-      icon: Github,
+      iconName: 'Github',
       title: "GitHub",
       value: "View my repositories",
       href: "https://github.com",
@@ -85,7 +95,7 @@ const Contact = () => {
     },
     {
       id: 4,
-      icon: MapPin,
+      iconName: 'MapPin',
       title: "Location",
       value: "Tamil Nadu, India",
       href: "#",
@@ -93,7 +103,13 @@ const Contact = () => {
     }
   ];
 
-  const [contactMethods, setContactMethods] = usePersistentStorage<ContactMethod[]>('contact_methods', defaultContactMethods);
+  const [contactMethodsData, setContactMethodsData] = usePersistentStorage<ContactMethodData[]>('contact_methods', defaultContactMethodsData);
+
+  // Convert stored data to contact methods with icon components
+  const contactMethods: ContactMethod[] = contactMethodsData.map(method => ({
+    ...method,
+    icon: getIconComponent(method.iconName)
+  }));
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -156,7 +172,7 @@ const Contact = () => {
       value: contact.value,
       href: contact.href,
       color: contact.color,
-      iconName: iconOptions.find(icon => icon.component === contact.icon)?.name || 'Mail'
+      iconName: contact.iconName
     });
     setIsEditContactOpen(true);
   };
@@ -171,7 +187,7 @@ const Contact = () => {
       return;
     }
     
-    setContactMethods(prev => prev.filter(contact => contact.id !== id));
+    setContactMethodsData(prev => prev.filter(contact => contact.id !== id));
     toast({
       title: "Contact Method Deleted",
       description: "The contact method has been successfully removed.",
@@ -208,18 +224,16 @@ const Contact = () => {
       return;
     }
 
-    const selectedIcon = iconOptions.find(icon => icon.name === contactForm.iconName)?.component || Mail;
-    
-    const contactData = {
+    const contactData: Omit<ContactMethodData, 'id'> = {
       title: contactForm.title.trim(),
       value: contactForm.value.trim(),
       href: contactForm.href.trim(),
       color: contactForm.color,
-      icon: selectedIcon
+      iconName: contactForm.iconName
     };
 
     if (editingContact) {
-      setContactMethods(prev => prev.map(contact => 
+      setContactMethodsData(prev => prev.map(contact => 
         contact.id === editingContact.id 
           ? { ...contact, ...contactData }
           : contact
@@ -229,11 +243,11 @@ const Contact = () => {
         description: "The contact method has been successfully updated.",
       });
     } else {
-      const newContact = {
+      const newContact: ContactMethodData = {
         ...contactData,
-        id: Math.max(...contactMethods.map(c => c.id), 0) + 1
+        id: Math.max(...contactMethodsData.map(c => c.id), 0) + 1
       };
-      setContactMethods(prev => [...prev, newContact]);
+      setContactMethodsData(prev => [...prev, newContact]);
       toast({
         title: "Contact Method Added",
         description: "The new contact method has been successfully added.",
@@ -534,6 +548,19 @@ const Contact = () => {
                 <option value="blue">Blue</option>
                 <option value="gray">Gray</option>
                 <option value="green">Green</option>
+              </select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="contact-icon" className="text-right">Icon</Label>
+              <select
+                id="contact-icon"
+                value={contactForm.iconName}
+                onChange={(e) => setContactForm(prev => ({ ...prev, iconName: e.target.value }))}
+                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+              >
+                {iconOptions.map(option => (
+                  <option key={option.name} value={option.name}>{option.name}</option>
+                ))}
               </select>
             </div>
           </div>
