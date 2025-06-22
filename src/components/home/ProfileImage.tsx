@@ -29,7 +29,7 @@ const ProfileImage = () => {
         {/* Profile photo with improved positioning for face visibility */}
         <Avatar className="w-72 h-72 relative z-10 transition-all duration-300 group-hover:scale-105">
           <AvatarImage 
-            src="https://i.postimg.cc/kMvvkTBQ/cde33868-dee9-4ada-be87-c5455304fa32.png" 
+            src="https://i.postimg.cc/WbKTj6y3/SD-name-Logo.jpg" 
             alt="Dinesh Kumar S" 
             className="object-cover rounded-full scale-110 translate-y-[-10px]"
             style={{
