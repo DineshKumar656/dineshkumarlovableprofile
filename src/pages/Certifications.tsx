@@ -9,10 +9,10 @@ import CertificateUpload from "@/components/CertificateUpload";
 import CertificateEdit from "@/components/CertificateEdit";
 import { useToast } from "@/hooks/use-toast";
 import { useEditModeContext } from "@/contexts/EditModeContext";
-import { usePersistentStorage } from "@/hooks/usePersistentStorage";
+
 
 const Certifications = () => {
-  const { isEditMode, isAuthenticated } = useEditModeContext();
+  const { isEditMode } = useEditModeContext();
   const [isVisible, setIsVisible] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [selectedCertificate, setSelectedCertificate] = useState(null);
@@ -88,7 +88,7 @@ const Certifications = () => {
     }
   ];
 
-  const [certifications, setCertifications] = usePersistentStorage('portfolio_certifications', defaultCertifications);
+  const certifications = defaultCertifications;
 
   useEffect(() => {
     setIsVisible(true);
@@ -121,70 +121,31 @@ const Certifications = () => {
   };
 
   const handleEditCertificate = (cert: any, index: number) => {
-    if (!isEditMode || !isAuthenticated) {
-      toast({
-        title: "Access Denied",
-        description: "Please login as admin and enable edit mode to edit certificates.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setEditingCertificate({ ...cert, index });
-    setIsEditOpen(true);
+    toast({
+      title: "Edit Mode Disabled",
+      description: "Certificate editing has been simplified - content is now static.",
+      variant: "destructive",
+    });
   };
 
-  const handleUpdateCertificate = (updatedCertificate: any) => {
-    const index = editingCertificate?.index;
-    if (index !== undefined) {
-      setCertifications(prev => {
-        const newCerts = [...prev];
-        newCerts[index] = updatedCertificate;
-        return newCerts;
-      });
-      toast({
-        title: "Certificate updated",
-        description: "The certificate has been updated successfully"
-      });
-    }
-  };
+  const handleUpdateCertificate = (updatedCertificate: any) => {};
 
   const handleDeleteCertificate = (index: number) => {
-    if (!isEditMode || !isAuthenticated) {
-      toast({
-        title: "Access Denied",
-        description: "Please login as admin and enable edit mode to delete certificates.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setCertifications(prev => prev.filter((_, i) => i !== index));
     toast({
-      title: "Certificate deleted",
-      description: "The certificate has been removed successfully"
+      title: "Edit Mode Disabled",
+      description: "Certificate editing has been simplified - content is now static.",
+      variant: "destructive",
     });
   };
 
-  const handleUploadCertificate = (newCertificate: any) => {
-    setCertifications(prev => [newCertificate, ...prev]);
-    toast({
-      title: "Certificate added",
-      description: "The new certificate has been added successfully"
-    });
-  };
+  const handleUploadCertificate = (newCertificate: any) => {};
 
   const handleAddCertificate = () => {
-    if (!isEditMode || !isAuthenticated) {
-      toast({
-        title: "Access Denied",
-        description: "Please login as admin and enable edit mode to add certificates.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setIsUploadOpen(true);
+    toast({
+      title: "Edit Mode Disabled",
+      description: "Certificate editing has been simplified - content is now static.",
+      variant: "destructive",
+    });
   };
 
   return (
@@ -281,7 +242,7 @@ const Certifications = () => {
               </div>
 
               {/* Upload Certificate Button - Only show in edit mode */}
-              {isEditMode && isAuthenticated && (
+              {isEditMode && (
                 <Button 
                   onClick={handleAddCertificate}
                   size="lg"
@@ -388,7 +349,7 @@ const Certifications = () => {
                         <Eye className="mr-1 h-4 w-4" />
                         View
                       </Button>
-                      {isEditMode && isAuthenticated && (
+                      {isEditMode && (
                         <>
                           <Button
                             variant="outline"

@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Code, Database, Cpu, Users, Sparkles, Brain, Layers, Rocket, Edit, Trash2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useEditModeContext } from "@/contexts/EditModeContext";
-import { usePersistentStorage } from "@/hooks/usePersistentStorage";
+
 
 interface Skill {
   name: string;
@@ -63,8 +63,8 @@ const Skills = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // Use persistent storage for skills data only (without icons)
-  const [skillCategoriesData, setSkillCategoriesData] = usePersistentStorage<Record<string, SkillCategoryData>>('portfolio_skills', {
+  // Static skills data
+  const skillCategoriesData: Record<string, SkillCategoryData> = {
     programming: {
       title: "Programming Languages",
       skills: [
@@ -104,136 +104,26 @@ const Skills = () => {
         { name: "Problem Solving", level: 92 },
       ]
     }
-  });
+  };
 
   const handleEditSkill = (categoryKey: string, skillIndex: number) => {
-    if (!isEditMode) {
-      toast({
-        title: "Edit Mode Disabled",
-        description: "Please enable edit mode to modify content.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const skill = skillCategoriesData[categoryKey].skills[skillIndex];
-    setEditingSkill({ categoryKey, skillIndex, skill });
-    setEditForm({ name: skill.name, level: skill.level });
-    setIsEditModalOpen(true);
+    toast({
+      title: "Edit Mode Disabled",
+      description: "Skill editing has been simplified - content is now static.",
+      variant: "destructive",
+    });
   };
 
   const handleDeleteSkill = (categoryKey: string, skillIndex: number) => {
-    if (!isEditMode) {
-      toast({
-        title: "Edit Mode Disabled",
-        description: "Please enable edit mode to modify content.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const skill = skillCategoriesData[categoryKey].skills[skillIndex];
-    setSkillCategoriesData(prev => ({
-      ...prev,
-      [categoryKey]: {
-        ...prev[categoryKey],
-        skills: prev[categoryKey].skills.filter((_, index) => index !== skillIndex)
-      }
-    }));
-    
     toast({
-      title: "Skill Deleted",
-      description: `${skill.name} has been removed from ${skillCategoriesData[categoryKey].title}.`,
+      title: "Edit Mode Disabled", 
+      description: "Skill editing has been simplified - content is now static.",
+      variant: "destructive",
     });
   };
 
-  const handleSaveEdit = () => {
-    if (!editingSkill) return;
-
-    if (!editForm.name.trim()) {
-      toast({
-        title: "Error",
-        description: "Skill name cannot be empty.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (editForm.level < 0 || editForm.level > 100) {
-      toast({
-        title: "Error",
-        description: "Skill level must be between 0 and 100.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setSkillCategoriesData(prev => ({
-      ...prev,
-      [editingSkill.categoryKey]: {
-        ...prev[editingSkill.categoryKey],
-        skills: prev[editingSkill.categoryKey].skills.map((skill, index) =>
-          index === editingSkill.skillIndex
-            ? { name: editForm.name.trim(), level: editForm.level }
-            : skill
-        )
-      }
-    }));
-
-    toast({
-      title: "Skill Updated",
-      description: `${editForm.name} has been updated successfully.`,
-    });
-
-    setIsEditModalOpen(false);
-    setEditingSkill(null);
-    setEditForm({ name: "", level: 0 });
-  };
-
-  const handleAddSkill = () => {
-    if (!addForm.name.trim()) {
-      toast({
-        title: "Error",
-        description: "Skill name cannot be empty.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (addForm.level < 0 || addForm.level > 100) {
-      toast({
-        title: "Error",
-        description: "Skill level must be between 0 and 100.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!addForm.category) {
-      toast({
-        title: "Error",
-        description: "Please select a category.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setSkillCategoriesData(prev => ({
-      ...prev,
-      [addForm.category]: {
-        ...prev[addForm.category],
-        skills: [...prev[addForm.category].skills, { name: addForm.name.trim(), level: addForm.level }]
-      }
-    }));
-
-    toast({
-      title: "Skill Added",
-      description: `${addForm.name} has been added to ${skillCategoriesData[addForm.category].title}.`,
-    });
-
-    setIsAddModalOpen(false);
-    setAddForm({ name: "", level: 0, category: "" });
-  };
+  const handleSaveEdit = () => {};
+  const handleAddSkill = () => {};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 relative overflow-hidden">

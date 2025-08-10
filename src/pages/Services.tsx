@@ -18,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { BarChart3, Cpu, Brain, Settings, Presentation, Database, Sparkles, Wrench, Lightbulb, Edit, Trash2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useEditModeContext } from "@/contexts/EditModeContext";
-import { usePersistentStorage } from "@/hooks/usePersistentStorage";
+
 
 interface ServiceData {
   id: number;
@@ -71,8 +71,8 @@ const Services = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // Use persistent storage for service data (without component references)
-  const [serviceData, setServiceData] = usePersistentStorage<ServiceData[]>('portfolio_services', [
+  // Static service data
+  const serviceData: ServiceData[] = [
     {
       id: 1,
       iconName: 'BarChart3',
@@ -151,7 +151,7 @@ const Services = () => {
       ],
       color: "indigo"
     }
-  ]);
+  ];
 
   // Convert service data to services with icon components
   const services: Service[] = serviceData.map(data => ({
@@ -168,91 +168,22 @@ const Services = () => {
   });
 
   const handleEditService = (service: Service) => {
-    if (!isEditMode) {
-      toast({
-        title: "Edit Mode Disabled",
-        description: "Please enable edit mode to modify content.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setEditingService(service);
-    setServiceForm({
-      title: service.title,
-      description: service.description,
-      features: service.features.join('\n'),
-      color: service.color,
-      iconName: service.iconName
+    toast({
+      title: "Edit Mode Disabled",
+      description: "Service editing has been simplified - content is now static.",
+      variant: "destructive",
     });
-    setIsEditModalOpen(true);
   };
 
   const handleDeleteService = (id: number) => {
-    if (!isEditMode) {
-      toast({
-        title: "Edit Mode Disabled",
-        description: "Please enable edit mode to modify content.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setServiceData(prev => prev.filter(service => service.id !== id));
     toast({
-      title: "Service Deleted",
-      description: "The service has been successfully removed.",
+      title: "Edit Mode Disabled",
+      description: "Service editing has been simplified - content is now static.",
+      variant: "destructive",
     });
   };
 
-  const handleSaveService = () => {
-    if (!serviceForm.title.trim() || !serviceForm.description.trim()) {
-      toast({
-        title: "Error",
-        description: "Title and description are required.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    const newServiceData: ServiceData = {
-      title: serviceForm.title.trim(),
-      description: serviceForm.description.trim(),
-      features: serviceForm.features.split('\n').map(f => f.trim()).filter(f => f),
-      color: serviceForm.color,
-      iconName: serviceForm.iconName,
-      id: editingService ? editingService.id : Math.max(...serviceData.map(s => s.id)) + 1
-    };
-
-    if (editingService) {
-      setServiceData(prev => prev.map(service => 
-        service.id === editingService.id 
-          ? newServiceData
-          : service
-      ));
-      toast({
-        title: "Service Updated",
-        description: "The service has been successfully updated.",
-      });
-    } else {
-      setServiceData(prev => [...prev, newServiceData]);
-      toast({
-        title: "Service Added",
-        description: "The new service has been successfully added.",
-      });
-    }
-
-    setIsEditModalOpen(false);
-    setIsAddModalOpen(false);
-    setEditingService(null);
-    setServiceForm({
-      title: '',
-      description: '',
-      features: '',
-      color: 'blue',
-      iconName: 'Settings'
-    });
-  };
+  const handleSaveService = () => {};
 
   const getColorClasses = (color: string) => {
     const colorMap: Record<string, string> = {

@@ -17,7 +17,7 @@ import {
 import { Mail, Linkedin, Github, MapPin, Send, Edit, Trash2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useEditModeContext } from "@/contexts/EditModeContext";
-import { usePersistentStorage } from "@/hooks/usePersistentStorage";
+
 import emailjs from '@emailjs/browser';
 
 interface ContactMethodData {
@@ -34,7 +34,7 @@ interface ContactMethod extends ContactMethodData {
 }
 
 const Contact = () => {
-  const { isEditMode, isAuthenticated } = useEditModeContext();
+  const { isEditMode } = useEditModeContext();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -103,7 +103,7 @@ const Contact = () => {
     }
   ];
 
-  const [contactMethodsData, setContactMethodsData] = usePersistentStorage<ContactMethodData[]>('contact_methods', defaultContactMethodsData);
+  const contactMethodsData: ContactMethodData[] = defaultContactMethodsData;
 
   // Convert stored data to contact methods with icon components
   const contactMethods: ContactMethod[] = contactMethodsData.map(method => ({
@@ -157,107 +157,30 @@ const Contact = () => {
   };
 
   const handleEditContact = (contact: ContactMethod) => {
-    if (!isEditMode || !isAuthenticated) {
-      toast({
-        title: "Access Denied",
-        description: "Please login as admin and enable edit mode to modify contact methods.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setEditingContact(contact);
-    setContactForm({
-      title: contact.title,
-      value: contact.value,
-      href: contact.href,
-      color: contact.color,
-      iconName: contact.iconName
+    toast({
+      title: "Edit Mode Disabled",
+      description: "Contact editing has been simplified - content is now static.",
+      variant: "destructive",
     });
-    setIsEditContactOpen(true);
   };
 
   const handleDeleteContact = (id: number) => {
-    if (!isEditMode || !isAuthenticated) {
-      toast({
-        title: "Access Denied",
-        description: "Please login as admin and enable edit mode to delete contact methods.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setContactMethodsData(prev => prev.filter(contact => contact.id !== id));
     toast({
-      title: "Contact Method Deleted",
-      description: "The contact method has been successfully removed.",
+      title: "Edit Mode Disabled",
+      description: "Contact editing has been simplified - content is now static.",
+      variant: "destructive",
     });
   };
 
   const handleAddContact = () => {
-    if (!isEditMode || !isAuthenticated) {
-      toast({
-        title: "Access Denied",
-        description: "Please login as admin and enable edit mode to add contact methods.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setContactForm({
-      title: '',
-      value: '',
-      href: '',
-      color: 'blue',
-      iconName: 'Mail'
+    toast({
+      title: "Edit Mode Disabled",
+      description: "Contact editing has been simplified - content is now static.",
+      variant: "destructive",
     });
-    setIsAddContactOpen(true);
   };
 
-  const handleSaveContact = () => {
-    if (!contactForm.title.trim() || !contactForm.value.trim()) {
-      toast({
-        title: "Error",
-        description: "Title and value are required.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const contactData: Omit<ContactMethodData, 'id'> = {
-      title: contactForm.title.trim(),
-      value: contactForm.value.trim(),
-      href: contactForm.href.trim(),
-      color: contactForm.color,
-      iconName: contactForm.iconName
-    };
-
-    if (editingContact) {
-      setContactMethodsData(prev => prev.map(contact => 
-        contact.id === editingContact.id 
-          ? { ...contact, ...contactData }
-          : contact
-      ));
-      toast({
-        title: "Contact Method Updated",
-        description: "The contact method has been successfully updated.",
-      });
-    } else {
-      const newContact: ContactMethodData = {
-        ...contactData,
-        id: Math.max(...contactMethodsData.map(c => c.id), 0) + 1
-      };
-      setContactMethodsData(prev => [...prev, newContact]);
-      toast({
-        title: "Contact Method Added",
-        description: "The new contact method has been successfully added.",
-      });
-    }
-
-    setIsEditContactOpen(false);
-    setIsAddContactOpen(false);
-    setEditingContact(null);
-  };
+  const handleSaveContact = () => {};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 to-blue-100">
@@ -373,7 +296,7 @@ const Contact = () => {
                     <CardTitle className="text-2xl text-gray-900">
                       Get in Touch
                     </CardTitle>
-                    {isEditMode && isAuthenticated && (
+                    {isEditMode && (
                       <Button
                         onClick={handleAddContact}
                         size="sm"
@@ -415,7 +338,7 @@ const Contact = () => {
                               <div className="text-gray-600">{method.value}</div>
                             </div>
                           </a>
-                          {isEditMode && isAuthenticated && (
+                          {isEditMode && (
                             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
                               <Button
                                 size="sm"

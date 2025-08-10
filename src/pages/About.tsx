@@ -17,7 +17,7 @@ import {
 import { GraduationCap, Calendar, MapPin, Sparkles, Target, Heart, Zap, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useEditModeContext } from "@/contexts/EditModeContext";
-import { usePersistentStorage } from "@/hooks/usePersistentStorage";
+
 
 interface AboutContent {
   title: string;
@@ -69,10 +69,7 @@ const About = () => {
     ]
   };
 
-  const [aboutContent, setAboutContent] = usePersistentStorage<AboutContent>(
-    'portfolio_about_content', 
-    defaultAboutContent
-  );
+  const aboutContent: AboutContent = defaultAboutContent;
 
   const [editForm, setEditForm] = useState<any>({});
 
@@ -91,86 +88,14 @@ const About = () => {
   }, []);
 
   const handleEditSection = (section: string) => {
-    if (!isAuthenticated || !isEditMode) {
-      toast({
-        title: "Authentication Required",
-        description: "Please login as admin and enable edit mode to make changes.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setEditingSection(section);
-    
-    switch (section) {
-      case 'header':
-        setEditForm({
-          title: aboutContent.title,
-          description: aboutContent.description
-        });
-        break;
-      case 'journey':
-        setEditForm({
-          journeyText: aboutContent.journeyText.join('\n\n')
-        });
-        break;
-      case 'education':
-        setEditForm(aboutContent.education);
-        break;
-      case 'goals':
-        setEditForm({
-          shortTermGoals: aboutContent.shortTermGoals.join('\n'),
-          longTermGoals: aboutContent.longTermGoals.join('\n')
-        });
-        break;
-    }
-    
-    setIsEditModalOpen(true);
-  };
-
-  const handleSaveEdit = () => {
-    let updatedContent = { ...aboutContent };
-
-    switch (editingSection) {
-      case 'header':
-        updatedContent = {
-          ...updatedContent,
-          title: editForm.title,
-          description: editForm.description
-        };
-        break;
-      case 'journey':
-        updatedContent = {
-          ...updatedContent,
-          journeyText: editForm.journeyText.split('\n\n').filter((text: string) => text.trim())
-        };
-        break;
-      case 'education':
-        updatedContent = {
-          ...updatedContent,
-          education: editForm
-        };
-        break;
-      case 'goals':
-        updatedContent = {
-          ...updatedContent,
-          shortTermGoals: editForm.shortTermGoals.split('\n').filter((goal: string) => goal.trim()),
-          longTermGoals: editForm.longTermGoals.split('\n').filter((goal: string) => goal.trim())
-        };
-        break;
-    }
-
-    setAboutContent(updatedContent);
-
     toast({
-      title: "Content Updated",
-      description: "Your about section has been successfully saved.",
+      title: "Edit Mode Disabled",
+      description: "Content editing has been simplified - content is now static.",
+      variant: "destructive",
     });
-
-    setIsEditModalOpen(false);
-    setEditingSection("");
-    setEditForm({});
   };
+
+  const handleSaveEdit = () => {};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-400 via-indigo-500 to-purple-600 relative overflow-hidden">
@@ -227,7 +152,7 @@ const About = () => {
           <div className={`text-center mb-16 transform transition-all duration-1000 relative group ${
             isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
           }`}>
-            {isAuthenticated && isEditMode && (
+            {isEditMode && (
               <Button
                 onClick={() => handleEditSection('header')}
                 size="sm"
@@ -283,7 +208,7 @@ const About = () => {
               isVisible ? 'translate-x-0 opacity-100' : '-translate-x-12 opacity-0'
             }`}>
               <CardHeader className="relative">
-                {isAuthenticated && isEditMode && (
+                {isEditMode && (
                   <Button
                     onClick={() => handleEditSection('education')}
                     size="sm"
@@ -324,7 +249,7 @@ const About = () => {
               isVisible ? 'translate-x-0 opacity-100' : 'translate-x-12 opacity-0'
             }`}>
               <CardHeader className="relative">
-                {isAuthenticated && isEditMode && (
+                {isEditMode && (
                   <Button
                     onClick={() => handleEditSection('journey')}
                     size="sm"
@@ -355,7 +280,7 @@ const About = () => {
               isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
             }`}>
               <CardHeader className="relative">
-                {isAuthenticated && isEditMode && (
+                {isEditMode && (
                   <Button
                     onClick={() => handleEditSection('goals')}
                     size="sm"
